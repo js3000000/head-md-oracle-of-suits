@@ -12,8 +12,10 @@ This folder contains the code for the PhysicalComputing workshop teached by Doug
 - live server
 - live preview
 
-3.Exercice
-<br>
+
+
+
+### Exercices
 Play with p5 and vscode. Presentation of what we could achieved after 30 minutes. 
 
 ## 20251021 - week6 - day2 - Tuesday
@@ -24,3 +26,10 @@ In this session, we’re exploring some foundational programming concepts:
 2. **Introduction to Classes** – Learning how to define and use custom classes.
 3. **Code Improvement Through Comments** – Practicing how to suggest improvements and plan code updates using comments instead of direct implementation.
 4. **Make the planets move**
+
+
+
+
+
+### Exercices
+Play with the data in a 1D array.
