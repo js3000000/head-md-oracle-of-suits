@@ -1,37 +1,56 @@
 let video;
-let handpose;
-let predictions = [];
+    let detector;
+    let hands = [];
 
-function setup() {
-  createCanvas(640, 480);
-  video = createCapture(VIDEO);
-  video.size(width, height);
-  video.hide();
-
-  handpose = ml5.handpose(video, () => {
-    console.log("ml5 handpose loaded");
-  });
-  handpose.on("predict", (results) => {
-    predictions = results;
-  });
-}
-
-function draw() {
-  background(0);
-  image(video, 0, 0, width, height);
-
-  // draw keypoints from predictions
-  for (let i = 0; i < predictions.length; i++) {
-    const pred = predictions[i];
-    for (let j = 0; j < pred.landmarks.length; j++) {
-      const [x, y, z] = pred.landmarks[j];
-      fill(0, 255, 0);
-      noStroke();
-      circle(x, y, 8);
+    async function setupDetector() {
+      const model = handPoseDetection.SupportedModels.MediaPipeHands;
+      const detectorConfig = {
+        runtime: 'mediapipe',
+        solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands',
+        modelType: 'lite',
+        maxHands: 1
+      };
+      detector = await handPoseDetection.createDetector(model, detectorConfig);
+      console.log("Détecteur prêt");
     }
-  }
 
-  fill(255);
-  textSize(24);
-  text("Hello, world + handpose", 10, height - 20);
-}
+    function setup() {
+      createCanvas(640, 480);
+      video = createCapture(VIDEO);
+      video.size(width, height);
+      video.hide();
+
+      setupDetector();
+    }
+
+    async function detectHands() {
+      if (!detector) return;
+      hands = await detector.estimateHands(video.elt);
+    }
+
+    function drawKeypoints(hand) {
+      for (const kp of hand.keypoints) {
+        fill(0, 255, 0);
+        noStroke();
+        circle(kp.x, kp.y, 8);
+      }
+    }
+
+    function draw() {
+      background(0);
+      image(video, 0, 0, width, height);
+
+      
+    // Vérifie que la vidéo est prête AVANT de lancer la détection
+    if (video.elt.readyState === 4 && video.elt.videoWidth > 0) {
+      detectHands();
+    }
+
+      for (const hand of hands) {
+        drawKeypoints(hand);
+      }
+
+      fill(255);
+      textSize(24);
+      text("Hello, monde + détection de mains", 10, height - 20);
+    }
