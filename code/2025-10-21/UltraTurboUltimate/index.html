@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sketch</title>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+    <!-- p5 libraries -->
+    <script src="libraries/p5.min.js"></script>
+    <script src="libraries/p5.sound.min.js"></script>
+
+    <!-- Ensure a safe Module and prefer the non‑SIMD wasm build (fallback to CPU/GPU behavior) -->
+    <script>
+      window.Module = window.Module || {};
+      // legacy / safe argument slots (avoid Emscripten aborts)
+      window.Module.arguments = window.Module.arguments || [];
+      window.Module.arguments_ = window.Module.arguments_;
+      // helpful abort logger
+      window.Module.onAbort = window.Module.onAbort || function(err) {
+        console.error('Emscripten abort:', err);
+      };
+
+      // Prefer non-SIMD WASM artifacts by remapping SIMD filenames to their non-SIMD counterparts.
+      // This avoids loading hands_solution_simd_wasm_bin.* which can trigger GPU delegate / GL failures.
+      window.Module.locateFile = window.Module.locateFile || function(file) {
+        // remap SIMD wasm/js -> non-SIMD names
+        if (file.indexOf('hands_solution_simd_wasm_bin.wasm') !== -1) {
+          return 'https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands_solution_wasm_bin.wasm';
+        }
+        if (file.indexOf('hands_solution_simd_wasm_bin.js') !== -1) {
+          return 'https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands_solution_wasm_bin.js';
+        }
+        // default location (CDN)
+        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+      };
+    </script>
+  </head>
+
+  <body>
+    <script src="sketch.js"></script>
+  </body>
+</html>

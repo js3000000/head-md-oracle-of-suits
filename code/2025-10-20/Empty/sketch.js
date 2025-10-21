@@ -1,159 +1,80 @@
-// ...existing code...
 let video;
-
-let ball;
-const GRAVITY = 0.9;
-const DAMPING = 0.75;
-const FRICTION = 0.995;
+let model;            // tensorflow handpose model
+let predictions = []; // array from model.estimateHands()
 
 function setup() {
-    createCanvas(640, 480, WEBGL);
-    video = createCapture(VIDEO);
-    video.size(640, 480);
-    video.hide(); // Hide the default HTML video
+  createCanvas(400, 400);
+  background(220);
 
-    ball = {
-        pos: createVector(0, 0, 0),         // centered in WEBGL coords
-        vel: createVector(0, 0, 0),
-        r: 40,
-        dragging: false,
-        prevPositions: []                  // recent mouse positions while dragging
-    };
+  // start video
+  video = createCapture(VIDEO, () => {
+    console.log('video ready');
+  });
+  video.size(width, height);
+  video.hide();
+
+  // load handpose model (async)
+  loadHandpose();
 }
+
+async function loadHandpose() {
+  model = await handpose.load(); // from @tensorflow-models/handpose
+  console.log('Handpose model ready');
+  detectLoop(); // start continuous detection
+}
+
+// simple loop that avoids overlapping estimates
+/*async function detectLoop() {
+  if (!model || !video || !video.elt) return;
+  try {
+    const hands = await model.estimateHands(video.elt, true); // return landmarks in video pixels
+    predictions = hands;
+  } catch (err) {
+    console.error('handpose error', err);
+  }
+  // schedule next detection (adjust interval if needed)
+  setTimeout(detectLoop, 80);
+}*/
 
 function draw() {
-    background(30);
+  // draw webcam frame to canvas
+  //image(video, 0, 0, width, height);
 
-    // Draw webcam as a textured plane behind the scene
-    push();
-    translate(0, 0, -800);
-    // Flip vertically so webcam looks natural
-    scale(1, -1, 1);
-    noStroke();
-    texture(video);
-    plane(width, height);
-    pop();
+  // mapping from video pixel space -> canvas
+  const vw = (video.width && video.width > 0) ? video.width : (video.elt && video.elt.videoWidth) || width;
+  const vh = (video.height && video.height > 0) ? video.height : (video.elt && video.elt.videoHeight) || height;
+  const sx = width / vw;
+  const sy = height / vh;
+  const mirror = true; // mirror so labels match what user sees
 
-    // Lights for 3D sphere
-    ambientLight(60);
-    directionalLight(255, 255, 255, -0.5, -1, -0.5);
-    pointLight(200, 200, 255, 200, -200, 300);
+  // draw labels and markers for each detected hand
+  textSize(14);
+  noStroke();
 
-    // Update physics when not dragging
-    if (!ball.dragging) {
-        ball.vel.y += GRAVITY * (deltaTime / 16.66); // scale gravity by frame time
-        ball.vel.mult(FRICTION);
-        ball.pos.add(ball.vel.copy().mult(deltaTime / 16.66));
+  if (predictions.length > 0) {
+    // show top-center indicator while any hand is present
+    fill(0);
+    textAlign(CENTER, TOP);
+    textSize(24);
+    text('hand', width / 2, 8);
+  }
 
-        // World bounds (centered coordinates)
-        const halfW = width / 2;
-        const halfH = height / 2;
-        const zLimit = 600;
+  for (let i = 0; i < predictions.length; i++) {
+    const hand = predictions[i];
+    if (!hand.landmarks || hand.landmarks.length === 0) continue;
 
-        // X walls
-        if (ball.pos.x + ball.r > halfW) {
-            ball.pos.x = halfW - ball.r;
-            ball.vel.x *= -DAMPING;
-        } else if (ball.pos.x - ball.r < -halfW) {
-            ball.pos.x = -halfW + ball.r;
-            ball.vel.x *= -DAMPING;
-        }
+    // use wrist landmark (index 0) for label position
+    const [wx, wy] = hand.landmarks[0];
+    const cx = mirror ? width - (wx * sx) : wx * sx;
+    const cy = wy * sy;
 
-        // Floor / ceiling
-        if (ball.pos.y + ball.r > halfH) {
-            ball.pos.y = halfH - ball.r;
-            ball.vel.y *= -DAMPING;
-            // small additional damping on X/Z on hit
-            ball.vel.x *= 0.98;
-            ball.vel.z *= 0.98;
-        } else if (ball.pos.y - ball.r < -halfH) {
-            ball.pos.y = -halfH + ball.r;
-            ball.vel.y *= -DAMPING;
-        }
+    // draw small marker and label on the webcam frame
+    fill(0, 255, 100, 200);
+    circle(cx, cy, 10);
 
-        // Z bounds
-        if (ball.pos.z + ball.r > zLimit) {
-            ball.pos.z = zLimit - ball.r;
-            ball.vel.z *= -DAMPING;
-        } else if (ball.pos.z - ball.r < -zLimit) {
-            ball.pos.z = -zLimit + ball.r;
-            ball.vel.z *= -DAMPING;
-        }
-    }
-
-    // Draw the sphere at ball.pos
-    push();
-    translate(ball.pos.x, ball.pos.y, ball.pos.z);
-    specularMaterial(200);
-    shininess(50);
-    noStroke();
-    sphere(ball.r, 48, 48);
-    pop();
-
-    // Optional: show a small cursor when dragging
-    if (ball.dragging) {
-        push();
-        translate(ball.pos.x, ball.pos.y, ball.pos.z);
-        noFill();
-        stroke(255, 150);
-        sphere(ball.r + 6, 12, 12);
-        pop();
-    }
-
-    // Keep prevPositions capped
-    if (ball.prevPositions.length > 6) ball.prevPositions.shift();
-}
-
-// Convert mouse coords (top-left) to WEBGL-centered coords
-function centeredMouse() {
-    return createVector(mouseX - width / 2, mouseY - height / 2);
-}
-
-function mousePressed() {
-    const m = centeredMouse();
-    // pick up the ball if close enough
-    if (p5.Vector.dist(createVector(ball.pos.x, ball.pos.y, 0), createVector(m.x, m.y, 0)) < ball.r * 1.2) {
-        ball.dragging = true;
-        ball.prevPositions = [];
-        ball.prevPositions.push(m.copy());
-        // stop current motion while holding
-        ball.vel.set(0, 0, 0);
-    }
-}
-
-function mouseDragged() {
-    if (!ball.dragging) return;
-    const m = centeredMouse();
-    // Update ball position to follow mouse (map Y to some Z for depth feel)
-    ball.pos.x = m.x;
-    ball.pos.y = m.y;
-    // map vertical mouse position to depth (drag up -> forward)
-    ball.pos.z = map(m.y, -height / 2, height / 2, -300, 300);
-    ball.prevPositions.push(m.copy());
-    if (ball.prevPositions.length > 8) ball.prevPositions.shift();
-}
-
-function mouseReleased() {
-    if (!ball.dragging) return;
-    ball.dragging = false;
-
-    // Compute velocity from recent positions
-    if (ball.prevPositions.length >= 2) {
-        const first = ball.prevPositions[0];
-        const last = ball.prevPositions[ball.prevPositions.length - 1];
-        const dx = (last.x - first.x) / (ball.prevPositions.length);
-        const dy = (last.y - first.y) / (ball.prevPositions.length);
-        // forward/back velocity based on upward motion (negative dy -> forward)
-        const dz = map(-dy, -20, 20, -6, 6);
-
-        // Apply a multiplier to make throws feel responsive
-        const speedMult = 1.5;
-        ball.vel.x = dx * speedMult;
-        ball.vel.y = dy * speedMult;
-        ball.vel.z = dz * speedMult;
-    } else {
-        // small default pop
-        ball.vel.y = -6;
-    }
-    ball.prevPositions = [];
+    fill(255, 0, 0);
+    textAlign(CENTER, BOTTOM);
+    textSize(14);
+    text('hand', cx, cy - 8);
+  }
 }

@@ -1,4 +1,3 @@
-// ...existing code...
 let sphereX, sphereY;
 let sphereRadius = 50;
 let dragging = false;
@@ -53,4 +52,3 @@ function mousePressed() {
 function mouseReleased() {
   dragging = false;
 }
-// ...existing code...
