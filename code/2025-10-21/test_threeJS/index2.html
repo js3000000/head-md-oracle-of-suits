@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Left Wrist Detection</title>
+  <style>
+    body {
+      margin: 0;
+      background: #222;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #container {
+      position: relative;
+      width: 640px;
+      height: 480px;
+    }
+    video, canvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 640px;
+      height: 480px;
+      transform: scaleX(-1); /* mirror for selfie view */
+      border-radius: 8px;
+    }
+    canvas {
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <video id="webcam" autoplay muted playsinline></video>
+    <canvas id="output"></canvas>
+  </div>
+
+  <!-- Load MediaPipe pose and drawing utils -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const videoElement = document.getElementById('webcam');
+      const canvasElement = document.getElementById('output');
+      const canvasCtx = canvasElement.getContext('2d');
+
+      canvasElement.width = 640;
+      canvasElement.height = 480;
+
+      async function setupCamera() {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 640, height: 480, facingMode: 'user' },
+          audio: false,
+        });
+        videoElement.srcObject = stream;
+        return new Promise((resolve) => {
+          videoElement.onloadedmetadata = () => resolve(videoElement);
+        });
+      }
+
+      const pose = new Pose({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+      });
+
+      pose.setOptions({
+        modelComplexity: 1,
+        smoothLandmarks: true,
+        enableSegmentation: false,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
+      });
+
+      pose.onResults(onResults);
+
+      function onResults(results) {
+        // Clear previous frame
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+        canvasCtx.save();
+        // Mirror the canvas to match video flip
+        canvasCtx.scale(-1, 1);
+        canvasCtx.translate(-canvasElement.width, 0);
+
+        if (results.poseLandmarks) {
+          const leftWrist = results.poseLandmarks[15]; // landmark 15 = left wrist
+          if (leftWrist.visibility > 0.5) {
+            const x = leftWrist.x * canvasElement.width;
+            const y = leftWrist.y * canvasElement.height;
+
+            // Draw green circle on left wrist
+            canvasCtx.beginPath();
+            canvasCtx.arc(x, y, 15, 0, 2 * Math.PI);
+            canvasCtx.fillStyle = 'rgba(0, 255, 0, 0.7)';
+            canvasCtx.fill();
+            canvasCtx.lineWidth = 2;
+            canvasCtx.strokeStyle = 'lime';
+            canvasCtx.stroke();
+          }
+        }
+
+        canvasCtx.restore();
+      }
+
+      async function main() {
+        await setupCamera();
+        videoElement.play();
+
+        async function detect() {
+          await pose.send({ image: videoElement });
+          requestAnimationFrame(detect);
+        }
+        detect();
+      }
+
+      main();
+    });
+  </script>
+</body>
+</html>
