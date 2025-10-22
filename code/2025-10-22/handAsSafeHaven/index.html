@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Continuous Falling Balls with Hand Catch - Three.js + MediaPipe</title>
+  <style>
+    html, body {
+      margin: 0;
+      overflow: hidden;
+      height: 100%;
+      background: black;
+    }
+    #videoElement {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: 0;
+    }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <video id="videoElement" autoplay playsinline muted></video>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.156.1/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
+  <script>
+    // === Three.js setup ===
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 1.5, 4);
+    camera.lookAt(0, 1, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Lighting
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5,10,5);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight(0x404040));
+
+    // Constants
+    const sphereRadius = 0.2;
+    const gravity = 0.0005;
+    const spawnIntervalMs = 2000; // spawn new ball every 2 seconds
+    const maxBalls = 10;
+
+    // Ball class
+    class Ball {
+      constructor() {
+        const geom = new THREE.SphereGeometry(sphereRadius, 32, 32);
+        const mat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+        this.mesh = new THREE.Mesh(geom, mat);
+        this.reset();
+        scene.add(this.mesh);
+      }
+      reset() {
+        this.position = new THREE.Vector3(
+          (Math.random() - 0.5) * 2, // random x in [-1,1]
+          2 + Math.random(),          // y between 2 and 3
+          (Math.random() - 0.5) * 2  // random z in [-1,1]
+        );
+        this.velocity = new THREE.Vector3(0, -0.02, 0);
+        this.mesh.position.copy(this.position);
+        this.stopped = false;
+      }
+      update() {
+        if (!this.stopped) {
+          this.position.add(this.velocity);
+          this.velocity.y -= gravity;
+          this.mesh.position.copy(this.position);
+        }
+      }
+      stopAt(y) {
+        this.position.y = y + sphereRadius;
+        this.mesh.position.copy(this.position);
+        this.velocity.set(0,0,0);
+        this.stopped = true;
+      }
+      isBelowFloor(floorY = -1) {
+        return this.position.y < floorY - sphereRadius;
+      }
+    }
+
+    // Balls array
+    const balls = [];
+
+    // Add initial ball
+    balls.push(new Ball());
+
+    // Spawn balls periodically
+    setInterval(() => {
+      if (balls.length < maxBalls) {
+        balls.push(new Ball());
+      }
+    }, spawnIntervalMs);
+
+    // Hand region mesh
+    let handMesh = null;
+    const handMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+    function initHandMesh() {
+      const geom = new THREE.BufferGeometry();
+      handMesh = new THREE.LineLoop(geom, handMaterial);
+      scene.add(handMesh);
+    }
+    initHandMesh();
+
+    // === MediaPipe Hands ===
+    const videoElement = document.getElementById('videoElement');
+
+    const hands = new Hands({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.7,
+      minTrackingConfidence: 0.5
+    });
+
+    hands.onResults(onHandResults);
+
+    const cameraUtils = new Camera(videoElement, {
+      onFrame: async () => {
+        await hands.send({image: videoElement});
+      },
+      width: 640,
+      height: 480
+    });
+    cameraUtils.start();
+
+    let lastHandLandmarks = null;
+
+    function onHandResults(results) {
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        lastHandLandmarks = results.multiHandLandmarks[0];
+      } else {
+        lastHandLandmarks = null;
+      }
+    }
+
+    // Convert normalized landmark to world coords
+    function landmarkToWorld(lm) {
+      const x = (lm.x - 0.5) * 4;
+      const y = (0.5 - lm.y) * 3;
+      const z = lm.z * -2;
+      return new THREE.Vector3(x, y, z);
+    }
+
+    function updateHandMesh() {
+      if (!lastHandLandmarks) {
+        handMesh.visible = false;
+        return;
+      }
+      handMesh.visible = true;
+
+      const pts = lastHandLandmarks.map(lm => landmarkToWorld(lm));
+      const polyIndices = [0, 5, 9, 13, 17];
+      const vertices = [];
+      for (let idx of polyIndices) {
+        const v = pts[idx];
+        vertices.push(v.x, v.y, v.z);
+      }
+      // Close loop
+      const v0 = pts[polyIndices[0]];
+      vertices.push(v0.x, v0.y, v0.z);
+
+      const geom = new THREE.BufferGeometry();
+      geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+
+      if (handMesh.geometry) handMesh.geometry.dispose();
+      handMesh.geometry = geom;
+    }
+
+    function checkCollision(ball) {
+      if (!lastHandLandmarks) return false;
+
+      const pts = lastHandLandmarks.map(lm => landmarkToWorld(lm));
+      const planeY = (pts[0].y + pts[5].y + pts[9].y + pts[13].y + pts[17].y) / 5;
+
+      if (ball.position.y - sphereRadius <= planeY) {
+        const xs = [pts[0].x, pts[5].x, pts[9].x, pts[13].x, pts[17].x];
+        const zs = [pts[0].z, pts[5].z, pts[9].z, pts[13].z, pts[17].z];
+        const minX = Math.min(...xs), maxX = Math.max(...xs);
+        const minZ = Math.min(...zs), maxZ = Math.max(...zs);
+
+        if (ball.position.x >= minX && ball.position.x <= maxX &&
+            ball.position.z >= minZ && ball.position.z <= maxZ) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // Animate
+    function animate() {
+      requestAnimationFrame(animate);
+
+      updateHandMesh();
+
+      for (const ball of balls) {
+        ball.update();
+
+        if (!ball.stopped && checkCollision(ball)) {
+          const pts = lastHandLandmarks.map(lm => landmarkToWorld(lm));
+          const planeY = (pts[0].y + pts[5].y + pts[9].y + pts[13].y + pts[17].y) / 5;
+          ball.stopAt(planeY);
+        }
+
+        if (ball.isBelowFloor()) {
+          ball.reset();
+        }
+      }
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
