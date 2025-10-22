@@ -1,4 +1,4 @@
-
+let wealth = 0;
 
 function setup() {
 
@@ -7,18 +7,21 @@ function setup() {
 
   // initialize MediaPipe settings
   setupHands();
+  
   // start camera using MediaPipeHands.js helper
   setupVideo();
-  
- 
+
 }
+
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
 
 
+// main loop
 function draw() {
+  
   // clear the canvas
   background(255);
 
@@ -26,7 +29,7 @@ function draw() {
   if (isVideoReady()) {
     // draw the capture image
     image(videoElement, 0, 0);
-    displayWealth();
+    //displayWealth();
   }
 
   // use thicker lines for drawing hand connections
@@ -39,18 +42,18 @@ function draw() {
     // for each detected hand
     for (let hand of detections.multiHandLandmarks) {
 
-      
-
       // draw the index finger
-      drawIndex(hand);
+      //drawIndex(hand);
       // draw the thumb finger
       drawThumb(hand);
+
+      drawMiddle(hand);
       // draw fingertip points
-      drawTips(hand);
+      //drawTips(hand);
       // draw connections
-      drawConnections(hand);
+      //drawConnections(hand);
       // draw all landmarks
-      drawLandmarks(hand);
+      //drawLandmarks(hand);
 
       //drawThumbMajorDistance(hand);
 
@@ -81,6 +84,23 @@ function drawIndex(landmarks) {
   circle(x, y, 20);
 
 }
+
+function drawMiddle(landmarks) {
+
+  // get the index fingertip landmark
+  let mark = landmarks[FINGER_TIPS.middle];
+
+  noStroke();
+  // set fill color for index fingertip
+  fill(0, 255, 255);
+
+  // adapt the coordinates (0..1) to video coordinates
+  let x = mark.x * videoElement.width;
+  let y = mark.y * videoElement.height;
+  circle(x, y, 20);
+
+}
+
 
 
 // draw the thumb finger tip landmark
@@ -119,7 +139,6 @@ function drawTips(landmarks) {
 
 }
 
-
 function drawLandmarks(landmarks) {
 
   noStroke();
@@ -134,7 +153,6 @@ function drawLandmarks(landmarks) {
   }
 
 }
-
 
 function drawConnections(landmarks) {
 
@@ -157,7 +175,7 @@ function drawConnections(landmarks) {
   }
 }
 
-
+  // Compute the Euclidean distance
 function calculateThumbMajorDistance(landmarks) {
   // Get thumb tip and middle (major) finger tip landmarks
   const thumbTip = landmarks[FINGER_TIPS.thumb];
@@ -169,9 +187,6 @@ function calculateThumbMajorDistance(landmarks) {
   const x2 = majorTip.x * videoElement.width;
   const y2 = majorTip.y * videoElement.height;
 
-  // Compute the Euclidean distance
-  const distance = dist(x1, y1, x2, y2);
-
 /*   // Draw the distance as text, following the middle finger tip
   fill(0); // black text
   noStroke();
@@ -179,10 +194,8 @@ function calculateThumbMajorDistance(landmarks) {
   textAlign(CENTER, BOTTOM);
   text(nf(distance, 1, 1) + ' px', x2, y2 - 10); */
 
-  return distance;
+  return dist(x1, y1, x2, y2);
 }
-
-let wealth = 0;
 
 function displayWealth() {
 
@@ -206,11 +219,12 @@ function makeSparkle(landmarks) {
 
     wealth += 10;
 
-    // Add money to your wallet
-    if (wealth > 1000) {
-      circle(50, width/2, height/2);
-    }
 
+    noStroke();
+    circle(10,10, 10);
+    
+
+ 
     // Draw the distance text above the index finger tip
     /* fill(0); // black text
     noStroke();
