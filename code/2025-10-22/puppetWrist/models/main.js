@@ -1,0 +1,82 @@
+ // --- Three.js Setup ---
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    camera.position.z = 2;
+
+    const renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Dot for wrist
+    const geometry = new THREE.SphereGeometry(0.03, 32, 32);
+    const material = new THREE.MeshBasicMaterial({color: 0xff0000});
+    const wristDot = new THREE.Mesh(geometry, material);
+    scene.add(wristDot);
+
+    // Initialize dot position offscreen
+    wristDot.position.set(1000, 1000, 1000);
+
+    // --- MediaPipe Hands Setup ---
+    const videoElement = document.getElementById('input_video');
+
+    const hands = new Hands({
+      locateFile: (file) => {
+        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+      }
+    });
+
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.7,
+      minTrackingConfidence: 0.7
+    });
+
+    hands.onResults(onResults);
+
+    // Use MediaPipe Camera Utils to get webcam stream
+    const cameraUtils = new Camera(videoElement, {
+      onFrame: async () => {
+        await hands.send({image: videoElement});
+      },
+      width: 640,
+      height: 480
+    });
+    cameraUtils.start();
+
+    // Function to handle results from MediaPipe
+    function onResults(results) {
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        const landmarks = results.multiHandLandmarks[0];
+
+        // Landmark 0 is the wrist
+        const wrist = landmarks[0];
+
+        // wrist.x and wrist.y are normalized [0..1], where (0,0) is top-left
+        // Map to three.js coordinates:
+        // We'll map x: 0..1 -> -aspect..aspect, y: 0..1 -> 1..-1 (invert Y for canvas coords)
+        const aspect = window.innerWidth / window.innerHeight;
+        const x3 = (wrist.x - 0.5) * 2 * aspect;   // -aspect to +aspect
+        const y3 = -(wrist.y - 0.5) * 2;           // +1 to -1
+
+        // Update wristDot position (z=0)
+        wristDot.position.set(x3, y3, 0);
+      } else {
+        // If no hand detected, move dot offscreen
+        wristDot.position.set(1000, 1000, 1000);
+      }
+    }
+
+    // Animation loop
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
