@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>FBX with MediaPipe Hand Tracking</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+    video { display: none; } /* hide webcam video */
+  </style>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://esm.sh/three",
+      "OrbitControls": "https://esm.sh/three/examples/jsm/controls/OrbitControls.js",
+      "FBXLoader": "https://esm.sh/three/examples/jsm/loaders/FBXLoader.js"
+    }
+  }
+  </script>
+
+  <!-- MediaPipe Hands (npm CDN via jsDelivr) -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+</head>
+<body>
+  <video id="input_video" autoplay></video>
+<script type="module" src="souris.js"></script>
+<script type="module" src="videoRenderer.js"></script>
+
+
+</body>
+</html>

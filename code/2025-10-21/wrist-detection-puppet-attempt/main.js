@@ -64,7 +64,7 @@ function init() {
 function loadFBX() {
   const loader = new FBXLoader();
   loader.load(
-    'models/your-model.fbx', // replace with your FBX file path
+    'models/puppetA.fbx', // replace with your FBX file path
     (object) => {
       object.scale.set(0.1, 0.1, 0.1);
       scene.add(object);

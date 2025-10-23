@@ -83,3 +83,18 @@ export function loadFBX() {
     }
   );
 }
+
+export function animate() {
+  requestAnimationFrame(animate);
+
+  // Rotate the arm based on mouse Y
+  if (rightArmBone) {
+    const minAngle = -Math.PI / 4;
+    const maxAngle = Math.PI / 4;
+    const angle = minAngle + (1 - mouseYNorm) * (maxAngle - minAngle);
+    rightArmBone.rotation.x = angle;
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
+}
