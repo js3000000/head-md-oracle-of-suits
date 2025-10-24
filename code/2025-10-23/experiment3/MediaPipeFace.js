@@ -186,7 +186,7 @@ async function setupFace(opts = {}) {
 function setupVideo(selfieMode = true, width = 640, height = 480) {
   window.selfieModeActive = !!selfieMode;
 
-  videoElement = createCapture(VIDEO, { flipped: true});
+  videoElement = createCapture(VIDEO, { flipped: false });
   videoElement.size(width, height);
   videoElement.hide();
 
