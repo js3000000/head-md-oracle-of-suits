@@ -212,7 +212,7 @@ function snapPuzzlePieceToCenter() {
     text("Puzzle Solved!", width / 2, height / 4);
 
     // Fonction confettis tombent devant l'écran
-    //drawConfetti();
+    drawConfetti();
   }
 }
 
