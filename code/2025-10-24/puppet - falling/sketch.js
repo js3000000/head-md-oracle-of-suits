@@ -92,7 +92,6 @@ function preload() {
 async function setup() {
   try {
     // Initialize MediaPipe
-    await initializeMediaPipe().catch(console.error);
 
     // Check for WebGL support
     if (!window.WebGLRenderingContext) {

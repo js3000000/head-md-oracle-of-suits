@@ -25,7 +25,8 @@ function draw() {
 
   // Appeler la fonction pour dessiner une pièce de puzzle ronde à une position donnée
   drawPuzzlePiece(pieceX, pieceY, pieceSize);
-  
+
+  updatePiecePositionFromHand(mouseX, mouseY, mouseIsPressed);
 
 }
 
@@ -86,4 +87,23 @@ function mouseReleased() {
   dragging = false;
 }
 
+// Fonction pour glisser déposer la pièce avec la détection Media Pipe Hands du fingertip index
+// On peut saisir la pièce n'importe où sur la pièce
+/* function updatePiecePositionFromHand(fingerX, fingerY, isPinching) {
+  let d = dist(fingerX, fingerY, pieceX, pieceY);
+  if (isPinching) {
+    if (!dragging && d < pieceSize / 2) {
+      dragging = true;
+      offsetX = fingerX - pieceX;
+      offsetY = fingerY - pieceY;
+    }
+    if (dragging) {
+      pieceX = fingerX - offsetX;
+      pieceY = fingerY - offsetY;
+    }
+  } else {
+    dragging = false;
+  }
+} */
 
+  
