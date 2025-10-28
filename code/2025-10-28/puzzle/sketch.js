@@ -1,12 +1,16 @@
 let pieceX;
 let pieceY;
+
 let pieceSize;
 let dragging = false;
+
 let offsetX = 0;
 let offsetY = 0;
 
 let fingerX;
 let fingerY;
+
+let videoAspect;
 
 function setup() {
   // resize canvas to windowWidth and windowHeight
@@ -28,7 +32,7 @@ function draw() {
 
   if (isVideoReady()) {
     // Afficher la vidéo en fond avec la taille du canvas mais garder les proportions
-    let videoAspect = videoElement.width / videoElement.height;
+    videoAspect = videoElement.width / videoElement.height;
     image(videoElement, 0, 0, width, videoAspect * height);
   }
 
@@ -44,7 +48,6 @@ function draw() {
       drawIndex(hand);
 
 
-
       // Mettre à jour la position de la pièce de puzzle en fonction de la position du tip de l'index
       let indexTip = hand[FINGER_TIPS.index];
       // landmarks are normalized [0..1] relative to the video frame - map them to the sketch canvas
@@ -54,8 +57,12 @@ function draw() {
 
       dragAndDropPuzzlePiece(fingerX, fingerY);
 
+      if (isPuzzleSolved(40)) {
+        break;
+      }
 
     }
+    snapPuzzlePieceToCenter();
   }
 }
 
@@ -109,7 +116,7 @@ function mouseDragged() {
   // si en train de drag, suivre la souris en conservant l'offset
   if (dragging) {
     pieceX = mouseX - offsetX;
-    pieceY = mouseY - offsetY;
+    pieceY = mouseY - offsetY * videoAspect;
   }
 }
 
@@ -122,7 +129,7 @@ function drawIndex(landmarks) {
   fill(0, 255, 255);
   noStroke();
   // draw index tip in canvas coordinates
-  circle(mark.x * width, mark.y * height, 20);
+  circle(mark.x * width, mark.y * height * videoAspect, 20);
 }
 
 function drawLandmarks(landmarks) {
@@ -155,5 +162,43 @@ function dragAndDropPuzzlePiece(fingerX, fingerY) {
     // update piece position while dragging using finger coordinates
     pieceX = fingerX - offsetX;
     pieceY = fingerY - offsetY;
+  }
+}
+
+// Fonction pour vérifier que la pièce de puzzle est bien placée au centre
+function isPuzzleSolved(distanceThreshold = 20) {
+  let centerX = width / 2;
+  let centerY = height / 2;
+  let d = dist(pieceX, pieceY, centerX, centerY);
+  // considérer le puzzle comme résolu si la pièce est proche du centre
+  return d < distanceThreshold;
+}
+
+// Fonction qui snap la pièce au centre si elle est proche selon une distance donnée
+function snapPuzzlePieceToCenter() {
+  if (isPuzzleSolved()) {
+    pieceX = width / 2;
+    pieceY = height / 2;
+    dragging = false;
+
+    // Afficher un message de succès
+    fill(random(255), random(255), random(255));
+    textSize(500);
+    textAlign(CENTER, CENTER);
+    text("Puzzle Solved!", width / 2, height / 2);
+
+    // Fonction confettis tombent devant l'écran
+    drawConfetti();
+  }
+}
+
+// Fonction qui fait tomber des confettis devant l'écran depuis le haut du canvas
+function drawConfetti() {
+  // Code pour dessiner des confettis tombants
+  for (let i = 0; i < 100; i++) {
+    fill(random(255), random(255), random(255));
+    let x = random(width);
+    let y = random(height);
+    ellipse(x, y, 100, 100);
   }
 }
