@@ -14,21 +14,42 @@ function setup() {
   pieceX = random((width-2*pieceSize));
   pieceY = random((height-2*pieceSize));
 
+  setupHands();
+  setupVideo();
+
 }
 
 function draw() {
   
   background(0);
 
-  // Appeler la fonction pour dessiner un carré avec un trou circulaire au centre du canvas
-  drawSquareWithHole(width / 2, height / 2, 1000, pieceSize);
+    if (isVideoReady()) {
+    // draw the webcam image stretched to fit the canvas
+    image(videoElement, 0, 0, width, height);
+  }
 
-  // Appeler la fonction pour dessiner une pièce de puzzle ronde à une position donnée
-  drawPuzzlePiece(pieceX, pieceY, pieceSize);
+    if (detections) {
+    for (let hand of detections.multiHandLandmarks) {
+      
+      drawIndex(hand);
+      
+      // Appeler la fonction pour dessiner un carré avec un trou circulaire au centre du canvas
+      drawSquareWithHole(width / 2, height / 2, 1000, pieceSize);
+      
+      // Appeler la fonction pour dessiner une pièce de puzzle ronde à une position donnée
+      drawPuzzlePiece(pieceX, pieceY, pieceSize);
+      
+      // Mettre à jour la position de la pièce de puzzle en fonction de la position du tip de l'index
+  let indexTip = hand[FINGER_TIPS.index];
+  // landmarks are normalized [0..1] relative to the video frame - map them to the sketch canvas
+  let fingerX = indexTip.x * width;
+  let fingerY = indexTip.y * height;
+      //updatePiecePositionFromHand(mouseX, mouseY, mouseIsPressed);
 
-  updatePiecePositionFromHand(mouseX, mouseY, mouseIsPressed);
-
+    }
+  }
 }
+
 
 // Fonction qui dessine un carré avec un trou circulaire au centre, au centre du canvas
 function drawSquareWithHole(x, y, size, holeSize) {
@@ -87,8 +108,6 @@ function mouseReleased() {
   dragging = false;
 }
 
-// Fonction pour glisser déposer la pièce avec la détection Media Pipe Hands du fingertip index
-// On peut saisir la pièce n'importe où sur la pièce
 /* function updatePiecePositionFromHand(fingerX, fingerY, isPinching) {
   let d = dist(fingerX, fingerY, pieceX, pieceY);
   if (isPinching) {
@@ -106,4 +125,37 @@ function mouseReleased() {
   }
 } */
 
-  
+// Fonction pour glisser déposer la pièce de puzzle avec le tip de l'index using mediapipe handpose
+function updatePiecePositionFromHand(fingerX, fingerY, isPinching) {
+  let d = dist(fingerX, fingerY, pieceX, pieceY);
+  if (isPinching) {
+    if (!dragging && d < pieceSize / 2) {
+      dragging = true;
+      offsetX = fingerX - pieceX;
+      offsetY = fingerY - pieceY;
+    }
+    if (dragging) {
+      pieceX = fingerX - offsetX;
+      pieceY = fingerY - offsetY;
+    }
+  } else {
+    dragging = false;
+  }
+}
+
+
+function drawIndex(landmarks) {
+  let mark = landmarks[FINGER_TIPS.index];
+  fill(0, 255, 255);
+  noStroke();
+  // draw index tip in canvas coordinates
+  circle(mark.x * width, mark.y * height, 20);
+}
+
+function drawLandmarks(landmarks) {
+  fill(255, 0, 0);
+  noStroke();
+  for (let mark of landmarks) {
+    circle(mark.x * width, mark.y * height, 6);
+  }
+}
