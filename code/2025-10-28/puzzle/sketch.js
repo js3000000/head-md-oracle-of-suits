@@ -15,11 +15,12 @@ let videoAspect;
 function setup() {
   // resize canvas to windowWidth and windowHeight
   createCanvas(windowWidth, windowHeight);
+  pixelDensity(1); // normalize across browsers / displays
 
-  // Initialiser la position de la pièce de puzzle x random mais avec la pièce entière dans canvas
-  pieceSize = 500;
-  pieceX = random((width - 2 * pieceSize));
-  pieceY = random((height - 2 * pieceSize));
+  // set piece size relative to canvas and ensure piece starts fully inside canvas
+  pieceSize = min(width, height) * 0.18;
+  pieceX = random(pieceSize/2, width - pieceSize/2);
+  pieceY = random(pieceSize/2, height - pieceSize/2);
 
   setupHands();
   setupVideo();
@@ -29,6 +30,10 @@ function setup() {
 // fonction windowResized pour redimensionner le canvas
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+  // update pieceSize and clamp position after resize
+  pieceSize = min(width, height) * 0.18;
+  pieceX = constrain(pieceX, pieceSize/2, width - pieceSize/2);
+  pieceY = constrain(pieceY, pieceSize/2, height - pieceSize/2);
 }
 
 function draw() {
@@ -36,13 +41,12 @@ function draw() {
   background(0);
 
   if (isVideoReady()) {
-    // Afficher la vidéo en fond avec la taille du canvas mais garder les proportions
-    videoAspect = videoElement.width / videoElement.height;
-    image(videoElement, 0, 0, width, videoAspect * height);
+    // draw video stretched to full canvas so normalized landmarks map to canvas coordinates
+    image(videoElement, 0, 0, width, height);
   }
 
   // Appeler la fonction pour dessiner un carré avec un trou circulaire au centre du canvas
-  drawSquareWithHole(width / 2, height / 2, 1000, pieceSize);
+  drawSquareWithHole(width / 2, height / 2, min(width, height) * 0.9, pieceSize);
 
   // Appeler la fonction pour dessiner une pièce de puzzle ronde à une position donnée
   drawPuzzlePiece(pieceX, pieceY, pieceSize);
@@ -52,17 +56,14 @@ function draw() {
 
       drawIndex(hand);
 
-
-      // Mettre à jour la position de la pièce de puzzle en fonction de la position du tip de l'index
       let indexTip = hand[FINGER_TIPS.index];
       // landmarks are normalized [0..1] relative to the video frame - map them to the sketch canvas
       let fingerX = indexTip.x * width;
       let fingerY = indexTip.y * height;
 
-
       dragAndDropPuzzlePiece(fingerX, fingerY);
 
-      if (isPuzzleSolved(40)) {
+      if (isPuzzleSolved(max(20, pieceSize * 0.12))) {
         break;
       }
 
@@ -95,7 +96,7 @@ function drawPuzzlePiece(x, y, size) {
   translate(x, y);
 
   // Dessiner la pièce de puzzle (simple cercle pour l'exemple)
-  fill(255);
+  fill(255, 100, 111);
   ellipse(0, 0, size, size);
 
   pop();
@@ -104,6 +105,10 @@ function drawPuzzlePiece(x, y, size) {
 // Fonction qui redimensionne le canvas lorsque la fenêtre est redimensionnée
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+  // update pieceSize and clamp position after resize
+  pieceSize = min(width, height) * 0.18;
+  pieceX = constrain(pieceX, pieceSize/2, width - pieceSize/2);
+  pieceY = constrain(pieceY, pieceSize/2, height - pieceSize/2);
 }
 
 // Fonction pour glisser déposer la pièce de puzzle avec la souris, on peut saisir la pièce n'importe où sur la pièce
@@ -121,7 +126,10 @@ function mouseDragged() {
   // si en train de drag, suivre la souris en conservant l'offset
   if (dragging) {
     pieceX = mouseX - offsetX;
-    pieceY = mouseY - offsetY * videoAspect;
+    pieceY = mouseY - offsetY;
+    // clamp inside canvas
+    pieceX = constrain(pieceX, pieceSize/2, width - pieceSize/2);
+    pieceY = constrain(pieceY, pieceSize/2, height - pieceSize/2);
   }
 }
 
@@ -133,8 +141,8 @@ function drawIndex(landmarks) {
   let mark = landmarks[FINGER_TIPS.index];
   fill(0, 255, 255);
   noStroke();
-  // draw index tip in canvas coordinates
-  circle(mark.x * width, mark.y * height * videoAspect, 20);
+  // map normalized landmarks to canvas coordinates (no videoAspect)
+  circle(mark.x * width, mark.y * height, max(8, min(36, pieceSize * 0.05)));
 }
 
 function drawLandmarks(landmarks) {
@@ -188,7 +196,7 @@ function snapPuzzlePieceToCenter() {
 
     // Afficher un message de succès
     fill(random(255), random(255), random(255));
-    textSize(500);
+    textSize(100);
     textAlign(CENTER, CENTER);
     text("Puzzle Solved!", width / 2, height / 2);
 
