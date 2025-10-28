@@ -11,6 +11,7 @@ let fingerX;
 let fingerY;
 
 let videoAspect;
+let videoStarted = false; // prevent double camera start
 
 function setup() {
   // resize canvas to windowWidth and windowHeight
@@ -22,8 +23,13 @@ function setup() {
   pieceX = random(pieceSize/2, width - pieceSize/2);
   pieceY = random(pieceSize/2, height - pieceSize/2);
 
-  setupHands();
-  setupVideo();
+  // start the video first, then initialize the hands code so only one camera request is made
+  if (!videoStarted) {
+      setupVideo();    // ensure this function starts the camera once
+      videoStarted = true;
+  }
+
+  setupHands(); // should NOT call getUserMedia if setupVideo already started the camera
 
 }
 
@@ -63,7 +69,7 @@ function draw() {
 
       dragAndDropPuzzlePiece(fingerX, fingerY);
 
-      if (isPuzzleSolved(max(20, pieceSize * 0.12))) {
+      if (isPuzzleSolved(60)) {
         break;
       }
 
@@ -142,7 +148,7 @@ function drawIndex(landmarks) {
   fill(0, 255, 255);
   noStroke();
   // map normalized landmarks to canvas coordinates (no videoAspect)
-  circle(mark.x * width, mark.y * height, max(8, min(36, pieceSize * 0.05)));
+  circle(mark.x * width, mark.y * height, max(15, min(36, pieceSize * 0.05)));
 }
 
 function drawLandmarks(landmarks) {
@@ -188,20 +194,25 @@ function isPuzzleSolved(distanceThreshold = 20) {
 }
 
 // Fonction qui snap la pièce au centre si elle est proche selon une distance donnée
+// améliorer l'effet de snap avec une animation de lerp
+
+// Enlever
 function snapPuzzlePieceToCenter() {
-  if (isPuzzleSolved()) {
-    pieceX = width / 2;
-    pieceY = height / 2;
+  if (isPuzzleSolved(60)) {
+    pieceX = lerp(pieceX, width / 2, 0.9);
+    pieceY = lerp(pieceY, height / 2, 0.9);
     dragging = false;
 
     // Afficher un message de succès
     fill(random(255), random(255), random(255));
     textSize(100);
     textAlign(CENTER, CENTER);
-    text("Puzzle Solved!", width / 2, height / 2);
+    
+
+    text("Puzzle Solved!", width / 2, height / 4);
 
     // Fonction confettis tombent devant l'écran
-    drawConfetti();
+    //drawConfetti();
   }
 }
 
