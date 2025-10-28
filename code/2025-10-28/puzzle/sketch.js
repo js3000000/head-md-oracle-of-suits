@@ -26,6 +26,11 @@ function setup() {
 
 }
 
+// fonction windowResized pour redimensionner le canvas
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}
+
 function draw() {
 
   background(0);
