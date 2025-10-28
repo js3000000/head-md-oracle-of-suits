@@ -1,2 +1,2 @@
-## Just a puzzle
-Demo that show how to make a game where you have to finish a puzzle
+## 1 piece puzzle
+Demo that test how to complete a puzzle using the tip of the index as a mouse.
