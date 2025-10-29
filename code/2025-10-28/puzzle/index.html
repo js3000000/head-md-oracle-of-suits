@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Sketch</title>
+    <title>1 piece puzzle - drag and drop with index finger</title>
 
     <link rel="stylesheet" type="text/css" href="style.css">
 
@@ -15,9 +15,18 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
     <!-- Local wrapper that wires MediaPipe to p5 (defines videoElement, detections, setupHands, setupVideo, etc.) -->
     <script src="MediaPipeHands.js"></script>
+    <script src="sketch.js"></script>
   </head>
 
   <body>
-    <script src="sketch.js"></script>
-  </body>
+  <!-- container where the p5 canvas will be inserted -->
+  <div id="canvas-container"></div>
+
+  <!-- sketch.js already included above; do not include twice -->
+
+  <div id="summary" class="summary" aria-live="polite">
+    <strong>ABOUT THIS STARTER</strong>
+    <p>This sketch uses MediaPipe Hands to detect index fingertips landmarks. Touch the red pieces of puzzle with the tip of your index finger and try to put it at the center of the square.
+  </div>
+</body>
 </html>

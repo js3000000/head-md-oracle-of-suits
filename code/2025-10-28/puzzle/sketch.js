@@ -9,19 +9,44 @@ let offsetY = 0;
 
 let fingerX;
 let fingerY;
+// area where the video is drawn on the canvas (used to map normalized landmarks)
+let videoDrawX = 0;
+let videoDrawY = 0;
+let videoDrawW = 0;
+let videoDrawH = 0;
 
 let videoAspect;
 let videoStarted = false; // prevent double camera start
 
 function setup() {
-  // resize canvas to windowWidth and windowHeight
-  createCanvas(windowWidth, windowHeight);
+  // resize canvas to windowWidth and windowHeight and place it into the page container
+  const cnv = createCanvas(windowWidth, windowHeight);
+  // if there is a container div, parent the canvas there so layout is controlled by the page
+  const container = select('#canvas-container');
+  if (container) cnv.parent(container);
   pixelDensity(1); // normalize across browsers / displays
 
   // set piece size relative to canvas and ensure piece starts fully inside canvas
   pieceSize = min(width, height) * 0.18;
-  pieceX = random(pieceSize/2, width - pieceSize/2);
-  pieceY = random(pieceSize/2, height - pieceSize/2);
+  // compute safe ranges for the piece center (use radius = pieceSize/2)
+  const radius = pieceSize / 2;
+  const minX = radius;
+  const maxX = width - radius;
+  const minY = radius;
+  const maxY = height - radius;
+
+  // if the canvas is smaller than the piece, fall back to centering the piece
+  if (maxX <= minX) {
+    pieceX = width / 2;
+  } else {
+    pieceX = random(minX, maxX);
+  }
+
+  if (maxY <= minY) {
+    pieceY = height / 2;
+  } else {
+    pieceY = random(minY, maxY);
+  }
 
   // start the video first, then initialize the hands code so only one camera request is made
   if (!videoStarted) {
@@ -47,12 +72,39 @@ function draw() {
   background(0);
 
   if (isVideoReady()) {
-    // draw video stretched to full canvas so normalized landmarks map to canvas coordinates
-    image(videoElement, 0, 0, width, height);
+    // draw the video preserving aspect ratio (contain / letterbox inside canvas)
+    // get the actual video intrinsic size when available
+    const vw = (videoElement.elt && videoElement.elt.videoWidth) || videoElement.width || 640;
+    const vh = (videoElement.elt && videoElement.elt.videoHeight) || videoElement.height || 480;
+
+    const canvasAR = width / height;
+    const videoAR = vw / vh;
+
+    if (videoAR > canvasAR) {
+      // video is wider than canvas => fit by width
+      videoDrawW = width;
+      videoDrawH = width / videoAR;
+      videoDrawX = 0;
+      videoDrawY = (height - videoDrawH) / 2;
+    } else {
+      // video is taller than canvas => fit by height
+      videoDrawH = height;
+      videoDrawW = height * videoAR;
+      videoDrawY = 0;
+      videoDrawX = (width - videoDrawW) / 2;
+    }
+
+    // draw the video into the computed rectangle
+    image(videoElement, videoDrawX, videoDrawY, videoDrawW, videoDrawH);
+  } else {
+    // fallback: occupy full canvas
+    videoDrawX = 0; videoDrawY = 0; videoDrawW = width; videoDrawH = height;
   }
 
+  noStroke();
+
   // Appeler la fonction pour dessiner un carré avec un trou circulaire au centre du canvas
-  drawSquareWithHole(width / 2, height / 2, min(width, height) * 0.9, pieceSize);
+  drawSquareWithHole(width / 2, height / 2, min(width, height) * 0.5, pieceSize);
 
   // Appeler la fonction pour dessiner une pièce de puzzle ronde à une position donnée
   drawPuzzlePiece(pieceX, pieceY, pieceSize);
@@ -62,12 +114,12 @@ function draw() {
 
       drawIndex(hand);
 
-      let indexTip = hand[FINGER_TIPS.index];
-      // landmarks are normalized [0..1] relative to the video frame - map them to the sketch canvas
-      let fingerX = indexTip.x * width;
-      let fingerY = indexTip.y * height;
+  let indexTip = hand[FINGER_TIPS.index];
+  // landmarks are normalized [0..1] relative to the video frame - map them to the drawn video rectangle
+  let fingerX = indexTip.x * videoDrawW + videoDrawX;
+  let fingerY = indexTip.y * videoDrawH + videoDrawY;
 
-      dragAndDropPuzzlePiece(fingerX, fingerY);
+  dragAndDropPuzzlePiece(fingerX, fingerY);
 
       if (isPuzzleSolved(60)) {
         break;
@@ -108,14 +160,6 @@ function drawPuzzlePiece(x, y, size) {
   pop();
 }
 
-// Fonction qui redimensionne le canvas lorsque la fenêtre est redimensionnée
-function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
-  // update pieceSize and clamp position after resize
-  pieceSize = min(width, height) * 0.18;
-  pieceX = constrain(pieceX, pieceSize/2, width - pieceSize/2);
-  pieceY = constrain(pieceY, pieceSize/2, height - pieceSize/2);
-}
 
 // Fonction pour glisser déposer la pièce de puzzle avec la souris, on peut saisir la pièce n'importe où sur la pièce
 function mousePressed() {
@@ -147,15 +191,19 @@ function drawIndex(landmarks) {
   let mark = landmarks[FINGER_TIPS.index];
   fill(0, 255, 255);
   noStroke();
-  // map normalized landmarks to canvas coordinates (no videoAspect)
-  circle(mark.x * width, mark.y * height, max(15, min(36, pieceSize * 0.05)));
+  // map normalized landmarks to the drawn video rectangle
+  const lx = mark.x * videoDrawW + videoDrawX;
+  const ly = mark.y * videoDrawH + videoDrawY;
+  circle(lx, ly, max(15, min(36, pieceSize * 0.05)));
 }
 
 function drawLandmarks(landmarks) {
   fill(255, 0, 0);
   noStroke();
   for (let mark of landmarks) {
-    circle(mark.x * width, mark.y * height, 6);
+    const lx = mark.x * videoDrawW + videoDrawX;
+    const ly = mark.y * videoDrawH + videoDrawY;
+    circle(lx, ly, 6);
   }
 }
 
