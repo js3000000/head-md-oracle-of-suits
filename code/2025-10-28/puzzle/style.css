@@ -6,3 +6,22 @@ html, body {
 canvas {
   display: block;
 }
+
+/* layout: keep the canvas in a container so page text remains visible */
+#canvas-container {
+  width: 100%;
+  /* leave room for the summary text below — adjust as needed */
+  height: calc(70vh);
+  background: #000; /* matches canvas background */
+  display: block;
+}
+
+.summary {
+  box-sizing: border-box;
+  max-width: 1000px;
+  margin: 18px auto;
+  padding: 12px 18px;
+  color: #111;
+  background: #fff;
+  border-radius: 6px;
+}
