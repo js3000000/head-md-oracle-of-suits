@@ -31,7 +31,7 @@ function portalPosition(landmarks) {
   const px = portalX * videoDrawW + videoDrawX;
   const py = portalY * videoDrawH + videoDrawY;
 
-  return {x: px, y: py};
+  return { x: px, y: py };
 }
 
 function calculateDistanceBetweenIndex(landmarks) {
@@ -46,13 +46,12 @@ function calculateDistanceBetweenIndex(landmarks) {
   return dist(index1.x, index1.y, index2.x, index2.y);
 }
 
-// fonction pour dessiner un cercle au croisement de la ligne formée entre les deux poignets et les doigts qui se touchent
 function drawPortal(landmarks) {
-  // position du portal (en pixels) — retourné par portalPosition
+  // position du portail
   const portalPosXY = portalPosition(landmarks);
   if (!portalPosXY) return;
 
-  // sécurité : s'assurer que les deux index existent
+  // sécurité sur les landmarks
   if (!landmarks || landmarks.length < 2) return;
   if (!landmarks[0] || !landmarks[1]) return;
   if (landmarks[0].length < 9 || landmarks[1].length < 9) return;
@@ -61,34 +60,48 @@ function drawPortal(landmarks) {
   const index1 = landmarks[0][INDEX_TIP];
   const index2 = landmarks[1][INDEX_TIP];
 
-  // calculer la distance EN PIXELS entre les deux index (pour éviter le mélange d'unités)
+  // conversion en pixels
   const x1 = index1.x * videoDrawW + videoDrawX;
   const y1 = index1.y * videoDrawH + videoDrawY;
   const x2 = index2.x * videoDrawW + videoDrawX;
   const y2 = index2.y * videoDrawH + videoDrawY;
 
+  // distance entre les deux index
   const dx = x1 - x2;
   const dy = y1 - y2;
   const distPx = Math.sqrt(dx * dx + dy * dy);
 
   // paramètres visuels
-  const maxPortalSize = 500;
   const minPortalSize = 50;
   const circleSizeInit = 50;
 
-  // échelle : transforme la distance en pixels en taille de cercle
-  // ajuster le facteur (0.5) si besoin pour obtenir le rendu voulu
+  // conversion distance → taille cible
   let targetSize = circleSizeInit + distPx * 0.5;
-  targetSize = constrain(targetSize, minPortalSize, maxPortalSize);
+  targetSize = Math.max(minPortalSize, targetSize);
 
-  // lissage entre frames (évite sauts brusques)
+  // ---- MÉMOIRE DE LA TAILLE ET CROISSANCE AUTO ----
   if (typeof window !== 'undefined') {
-    window._lastPortalSize = window._lastPortalSize || targetSize;
-    window._lastPortalSize = lerp(window._lastPortalSize, targetSize, 0.2);
+    if (window._lastPortalSize === undefined) window._lastPortalSize = targetSize;
+    if (window._autoGrow === undefined) window._autoGrow = false; // état : le portail s’agrandit tout seul ?
+
+    // si la taille dépasse un seuil → activer croissance auto
+    const growthThreshold = 100; // à ajuster selon ton rendu
+    if (targetSize > growthThreshold && !window._autoGrow) {
+      window._autoGrow = true;
+    }
+
+    // croissance naturelle du portail si activée
+    if (window._autoGrow) {
+      window._lastPortalSize += 20; // vitesse de croissance automatique
+    } else {
+      // sinon on suit la taille des doigts
+      window._lastPortalSize = lerp(window._lastPortalSize, targetSize, 0.2);
+    }
+
     targetSize = window._lastPortalSize;
   }
 
-  // dessiner
+  // dessin du cercle
   push();
   noStroke();
   fill(0, 0, 255, 150);
