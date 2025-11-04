@@ -89,5 +89,19 @@ function onHandsResults(results) {
 
 // move the videoElement && videoElement.loadedmetadata checks to here
 function isVideoReady() {
-    return videoElement && videoElement.loadedmetadata;
+    // p5's capture creates a wrapper element (videoElement.elt).
+    // The HTMLMediaElement has a readyState and videoWidth/videoHeight we can use
+    // to detect when frames are available. `loadedmetadata` is an event, not a
+    // reliable boolean property on the p5 wrapper, so test the underlying element.
+    if (!videoElement) return false;
+    const elt = videoElement.elt;
+    if (elt) {
+        // readyState >= 2 (HAVE_CURRENT_DATA) means we have data available
+        if (typeof elt.readyState === 'number' && elt.readyState >= 2) return true;
+        // alternatively check for intrinsic video size
+        if (typeof elt.videoWidth === 'number' && elt.videoWidth > 0) return true;
+    }
+    // fallback to p5 element dimensions
+    if (typeof videoElement.width === 'number' && videoElement.width > 0) return true;
+    return false;
 }
