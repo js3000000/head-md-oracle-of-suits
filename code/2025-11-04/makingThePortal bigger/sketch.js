@@ -69,18 +69,18 @@ function draw() {
   noStroke();
 
   // --- Hand Detection & Portal Activation ----------------
-  if (detections && detections.multiHandLandmarks) {
+  if (detections || portalActivated) {
     handdetected = true;
     landmarks = detections.multiHandLandmarks;
 
     const fingersTouching = checkDistanceFingers(landmarks);
 
-    for (let hand of landmarks) {
-      drawIndex(hand);
-      drawthumb(hand);
-      drawWrist(hand);
-      drawConnections(hand);
-    }
+    /*    for (let hand of landmarks) {
+         drawIndex(hand);
+         drawthumb(hand);
+         drawWrist(hand);
+         drawConnections(hand);
+       } */
 
     // activate the portal when fingers touch
     if (fingersTouching) {
@@ -90,6 +90,86 @@ function draw() {
 
   // --- Draw the portal even if no hands are visible -------
   if (portalActivated) {
-    drawPortal(landmarks);
+    // PARAMETERS for auto-grow behavior (can be overridden on window)
+    const AUTO_GROW_THRESHOLD = (typeof window !== 'undefined' && window.PORTAL_AUTO_GROW_THRESHOLD) || 300; // px
+    const AUTO_GROW_RATE = (typeof window !== 'undefined' && window.PORTAL_AUTO_GROW_RATE) || 4; // px per frame
+    const AUTO_GROW_TARGET = (typeof window !== 'undefined' && window.PORTAL_AUTO_GROW_TARGET) || Math.max(width, height) * 1.5; // target size to stop auto-growing
+
+    // compute portal position if available
+    let portalPosXY = portalPosition(landmarks);
+    // ensure global storage exists
+    if (typeof window !== 'undefined') {
+      window._portalPos = window._portalPos || portalPosXY || { x: width / 2, y: height / 2 };
+      window._portalSize = window._portalSize || 0;
+      window._portalAutoGrowing = window._portalAutoGrowing || false;
+      window._portalLocked = window._portalLocked || false;
+    }
+
+    // If landmarks available, compute finger distance and candidate size
+    if (landmarks && landmarks.length >= 2 && landmarkSafe(landmarks)) {
+      const INDEX_TIP = 8;
+      const index1 = landmarks[0][INDEX_TIP];
+      const index2 = landmarks[1][INDEX_TIP];
+
+      // conversion en pixels
+      const x1 = index1.x * videoDrawW + videoDrawX;
+      const y1 = index1.y * videoDrawH + videoDrawY;
+      const x2 = index2.x * videoDrawW + videoDrawX;
+      const y2 = index2.y * videoDrawH + videoDrawY;
+
+      const dx = x1 - x2;
+      const dy = y1 - y2;
+      const distPx = Math.sqrt(dx * dx + dy * dy);
+
+      // base target size from finger distance
+      const minPortalSize = 50;
+      const circleSizeInit = 50;
+      const candidateSize = Math.max(minPortalSize, circleSizeInit + distPx * 0.5);
+
+      // if candidate exceeds threshold and auto-grow not started, start auto-grow and lock position
+      if (!window._portalAutoGrowing && candidateSize >= AUTO_GROW_THRESHOLD) {
+        window._portalAutoGrowing = true;
+        window._portalPos = portalPosXY || window._portalPos;
+        // initialize portal size from candidate (use last smaller value)
+        window._portalSize = Math.max(window._portalSize, candidateSize);
+      }
+
+      // if not auto-growing and not locked, follow fingers
+      if (!window._portalAutoGrowing && !window._portalLocked) {
+        window._portalPos = portalPosXY || window._portalPos;
+        window._portalSize = lerp(window._portalSize, candidateSize, 0.2);
+      }
+    }
+
+    // Auto-grow logic: increment size per frame until target then lock
+    if (window._portalAutoGrowing && !window._portalLocked) {
+      window._portalSize = window._portalSize + AUTO_GROW_RATE;
+      if (window._portalSize >= AUTO_GROW_TARGET) {
+        window._portalSize = AUTO_GROW_TARGET;
+        window._portalLocked = true;
+        window._portalAutoGrowing = false;
+      }
+    }
+
+    // Draw portal: if locked or auto-growing or activated, always draw from stored pos/size
+    push();
+    noStroke();
+    fill(0, 0, 255, 150);
+    circle(window._portalPos.x, window._portalPos.y, window._portalSize);
+    pop();
+  }
+}
+
+// helper: check landmark arrays are valid and contain index tip coords
+function landmarkSafe(landmarks) {
+  try {
+    return (
+      landmarks[0] && landmarks[1] &&
+      landmarks[0].length > 8 && landmarks[1].length > 8 &&
+      typeof landmarks[0][8].x === 'number' && typeof landmarks[0][8].y === 'number' &&
+      typeof landmarks[1][8].x === 'number' && typeof landmarks[1][8].y === 'number'
+    );
+  } catch (e) {
+    return false;
   }
 }
