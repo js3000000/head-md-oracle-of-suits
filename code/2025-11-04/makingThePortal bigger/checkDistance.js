@@ -1,6 +1,8 @@
 // fonction qui test si deux index se touchent
+const THRESHOLD = 0.03;  // seuil en coordonnées normalisées (ajuster si besoin)
+
 function checkDistanceIndex(hands) {
-    const THRESHOLD = 0.06; // seuil en coordonnées normalisées (ajuster si besoin)
+
 
     if (!hands) return false;
 
@@ -24,7 +26,7 @@ function checkDistanceIndex(hands) {
 
 // fonction qui test si deux pouces se touchent
 function checkDistanceThumb(hands) {
-    const THRESHOLD = 0.06;
+    
     if (!hands) return false;
     if (Array.isArray(hands) && hands.length >= 2 && Array.isArray(hands[0])) {
         const thumb1 = hands[0][FINGER_TIPS.thumb];

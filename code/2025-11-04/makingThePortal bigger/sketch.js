@@ -84,6 +84,11 @@ function draw() {
 
     // activate the portal when fingers touch
     if (fingersTouching) {
+      // text message
+      fill(255);
+      textSize(32);
+      textAlign(CENTER, CENTER);
+      text("Portal Activated", width / 2, height / 2);
       portalActivated = true;
     }
   }
@@ -91,8 +96,8 @@ function draw() {
   // --- Draw the portal even if no hands are visible -------
   if (portalActivated) {
     // PARAMETERS for auto-grow behavior (can be overridden on window)
-    const AUTO_GROW_THRESHOLD = (typeof window !== 'undefined' && window.PORTAL_AUTO_GROW_THRESHOLD) || 300; // px
-    const AUTO_GROW_RATE = (typeof window !== 'undefined' && window.PORTAL_AUTO_GROW_RATE) || 4; // px per frame
+    const AUTO_GROW_THRESHOLD = (typeof window !== 'undefined' && window.PORTAL_AUTO_GROW_THRESHOLD) || 200; // px
+    const AUTO_GROW_RATE = (typeof window !== 'undefined' && window.PORTAL_AUTO_GROW_RATE) || 30; // px per frame
     const AUTO_GROW_TARGET = (typeof window !== 'undefined' && window.PORTAL_AUTO_GROW_TARGET) || Math.max(width, height) * 1.5; // target size to stop auto-growing
 
     // compute portal position if available
