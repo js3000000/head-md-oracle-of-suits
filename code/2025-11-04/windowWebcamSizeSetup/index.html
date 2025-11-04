@@ -17,21 +17,17 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
     
     <!-- Local wrapper that wires MediaPipe to p5 (defines videoElement, detections, setupHands, setupVideo, etc.) -->
+
     <script src="MediaPipeHands.js"></script>
+    <script src="functions.js"></script>
     <script src="sketch.js"></script>
-    
+
+
   </head>
 
   <body>
     <!-- container where the p5 canvas will be inserted -->
     <div id="canvas-container"></div>
 
-    <div id="summary" class="summary" aria-live="polite">
-      <strong>ABOUT THIS STARTER</strong>
-      <p>This sketch uses MediaPipe Hands to detect index fingertips landmarks.
-      </p>
-    </div>
-
-  </body>
 
 </html>

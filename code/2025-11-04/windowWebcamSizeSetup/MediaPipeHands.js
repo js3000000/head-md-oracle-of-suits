@@ -21,7 +21,8 @@ const FINGER_TIPS = {
   pinky: 20
 };
 
-const HAND_CONNECTIONS = [
+
+/* const HAND_CONNECTIONS = [
     // wrist to thumb
     [0, 1], [1, 2], [2, 3], [3, 4],
     // wrist to index
@@ -32,7 +33,7 @@ const HAND_CONNECTIONS = [
     [0, 13], [13, 14], [14, 15], [15, 16],
     // pinky
     [0, 17], [17, 18], [18, 19], [19, 20]
-];
+]; */
 
 // Optional helper to set default options from one place
 window.initHands = (opts = {}) => {
@@ -47,10 +48,15 @@ window.initHands = (opts = {}) => {
     return window.hands;
 };
 
+let webcamWidth = 1920;
+let webcamHeight = 1080;
+// 4:3 640x480
+
 function setupVideo(selfieMode = true) {
+    
     // create a hidden video element that MediaPipe Camera util will use
     videoElement = createCapture(VIDEO, { flipped: selfieMode });
-    videoElement.size(640, 480);
+    videoElement.size(webcamWidth, webcamHeight);
     videoElement.hide();
 
     // Use MediaPipe Camera util to feed frames from the p5 video element
@@ -59,8 +65,6 @@ function setupVideo(selfieMode = true) {
         onFrame: async () => {
             await hands.send({ image: videoElement.elt });
         },
-        width: 640,
-        height: 480
     });
 
     cam.start();
@@ -89,11 +93,13 @@ function onHandsResults(results) {
 
 // move the videoElement && videoElement.loadedmetadata checks to here
 function isVideoReady() {
+    
     // p5's capture creates a wrapper element (videoElement.elt).
     // The HTMLMediaElement has a readyState and videoWidth/videoHeight we can use
     // to detect when frames are available. `loadedmetadata` is an event, not a
     // reliable boolean property on the p5 wrapper, so test the underlying element.
     if (!videoElement) return false;
+
     const elt = videoElement.elt;
     if (elt) {
         // readyState >= 2 (HAVE_CURRENT_DATA) means we have data available

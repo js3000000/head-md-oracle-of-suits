@@ -139,6 +139,30 @@ function drawConnections(landmarks) {
     let bx = b.x * videoElement.width;
     let by = b.y * videoElement.height;
     line(ax, ay, bx, by);
+
+    // draw landmark for the wrist
+    if (connection[0] === 0) {
+      noStroke();
+      fill(255, 0, 255);
+      circle(ax, ay, 10);
+    }
   }
 
 }
+
+/* function drawPortal(){
+    // iterate through each connection
+  for (let connection of HAND_CONNECTIONS) {
+    // get the two landmarks to connect
+    const a = landmarks[connection[0]];
+    const b = landmarks[connection[1]];
+    // skip if either landmark is missing
+    if (!a || !b) continue;
+    // landmarks are normalized [0..1], (x,y) with origin top-left
+    let ax = a.x * videoElement.width;
+    let ay = a.y * videoElement.height;
+    let bx = b.x * videoElement.width;
+    let by = b.y * videoElement.height;
+    line(ax, ay, bx, by)
+}
+}*/

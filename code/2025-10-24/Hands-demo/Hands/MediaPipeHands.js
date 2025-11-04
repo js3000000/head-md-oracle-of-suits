@@ -27,11 +27,11 @@ const HAND_CONNECTIONS = [
     // wrist to index
     [0, 5], [5, 6], [6, 7], [7, 8],
     // middle
-    [0, 9], [9, 10], [10, 11], [11, 12],
+  /*   [0, 9], [9, 10], [10, 11], [11, 12],
     // ring
     [0, 13], [13, 14], [14, 15], [15, 16],
     // pinky
-    [0, 17], [17, 18], [18, 19], [19, 20]
+    [0, 17], [17, 18], [18, 19], [19, 20] */
 ];
 
 // Optional helper to set default options from one place
@@ -47,6 +47,10 @@ window.initHands = (opts = {}) => {
     return window.hands;
 };
 
+let webcamHeight = 1920;
+let webcamWidth = 1080;
+
+
 function setupVideo(selfieMode = true) {
     // create a hidden video element that MediaPipe Camera util will use
     videoElement = createCapture(VIDEO, { flipped: selfieMode });
@@ -59,8 +63,8 @@ function setupVideo(selfieMode = true) {
         onFrame: async () => {
             await hands.send({ image: videoElement.elt });
         },
-        width: 640,
-        height: 480
+        width: webcamWidth,
+        height: webcamHeight
     });
 
     cam.start();
