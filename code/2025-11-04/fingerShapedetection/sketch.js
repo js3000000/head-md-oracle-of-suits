@@ -3,6 +3,7 @@ let offsetY = 0;
 
 let fingerX;
 let fingerY;
+
 // area where the video is drawn on the canvas (used to map normalized landmarks)
 let videoDrawX = 0;
 let videoDrawY = 0;
@@ -14,6 +15,8 @@ let piecePlaced = false;
 
 let videoAspect;
 let videoStarted = false; // prevent double camera start
+
+
 
 function setup() {
 
@@ -85,21 +88,43 @@ function draw() {
   // Detections -----------------------------------------------
 
   if (detections) {
+
+    // remplir le tableau des landmarks (multiHandLandmarks)
+    landmarks = detections.multiHandLandmarks;
+
+    // vérifier ici (passez l'array de mains)
+    const fingersTouching = checkDistanceFingers(landmarks);
+
     for (let hand of detections.multiHandLandmarks) {
 
-      // dessinger l'index et le pouce
+      // dessiner l'index et le pouce
       drawIndex(hand);
       drawthumb(hand);
       drawWrist(hand);
-
-      // dessinger les joints
+      // dessiner les joints
       drawConnections(hand);
 
-      // fonction pour dessiner un cercle sur la fenetre au centre 
-      //drawPortal();
 
+      // fonction pour dessiner un cercle sur la fenetre au centre
+      if (fingersTouching) {
+        drawPortal(landmarks);
+      }
 
     }
+
+    // afficher le message une seule fois (après avoir dessiné les mains)
+    if (fingersTouching) {
+      fill(255, 0, 0);
+      textSize(32);
+      textAlign(CENTER, CENTER);
+      text("Fingers Touching!", width / 2, 50);
+    } else {
+      fill(0, 255, 0);
+      textSize(32);
+      textAlign(CENTER, CENTER);
+      text("Fingers Not Touching", width / 2, 50);
+    }
+
   }
 
 

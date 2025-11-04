@@ -22,6 +22,16 @@ function drawthumb(landmarks) {
   circle(lx, ly, max(15, min(36, fingerCircleSize  * 0.05)));
 }
 
+function drawWrist(landmarks) {
+
+  // dessiner un cercle à la position du poignet (landmark 0)
+  let wrist = landmarks[0];
+  const wx = wrist.x * videoDrawW + videoDrawX;
+  const wy = wrist.y * videoDrawH + videoDrawY;
+  fill(255, 255, 0);
+  circle(wx, wy, 10);
+}
+
 function drawConnections(landmarks) {
 
   // set stroke color for connections
@@ -42,16 +52,6 @@ function drawConnections(landmarks) {
     line(ax, ay, bx, by);
   }
 
-}
-
-function drawWrist(landmarks) {
-
-  // dessiner un cercle à la position du poignet (landmark 0)
-  let wrist = landmarks[0];
-  const wx = wrist.x * videoDrawW + videoDrawX;
-  const wy = wrist.y * videoDrawH + videoDrawY;
-  fill(255, 255, 0);
-  circle(wx, wy, 10);
 }
 
 
