@@ -6,9 +6,9 @@ function fallingCards() {
 
   // Ajouter une nouvelle carte tombante
   const card = {
-    x: random(width),
-    y: 0,
-    speed: random(2, 5),
+    x: (random(videoDrawW) + videoDrawX),
+    y: -70,
+    speed: 2,
   };
   fallingCards.cards.push(card);
 
@@ -24,7 +24,9 @@ function fallingCards() {
   }
   // Dessiner les cartes tombantes
   for (const card of fallingCards.cards) {
-    fill(255, 0, 0);
+    stroke(1);
+    fill(255, 255, 255);
     rect(card.x, card.y, 50, 70); // Dessiner une carte rouge
+    circle(card.x + 25, card.y + 35, 10); // Dessiner un cercle au centre de la carte
   }
 }

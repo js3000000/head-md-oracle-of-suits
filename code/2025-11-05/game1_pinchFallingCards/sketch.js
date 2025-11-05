@@ -69,18 +69,18 @@ function draw() {
     }
   }
 
+
+  // fonction qui fait tomber des carrés du haut de l'écran 
+  fallingCards();
+  image(portalImg, videoDrawX, videoDrawY + videoDrawH-300, videoDrawW, 300);
+
+
   // --- Hand landmarks drawing ------------------------------------
   if (detections) {
     for (let hand of detections.multiHandLandmarks) {
 
       drawIndex(hand);
       drawthumb(hand);
-
-      // fonction qui fait tomber des carrés du haut de l'écran 
-      fallingCards();
-
-      // todo : dessiner carte qui tombent
-
 
     }
   }
@@ -99,4 +99,10 @@ function landmarkSafe(landmarks) {
   } catch (e) {
     return false;
   }
+}
+
+
+// preload function to load images
+function preload() {
+  portalImg = loadImage('./img/fire_template_1.png'); // adjust path as needed
 }
