@@ -29,12 +29,13 @@ function checkDistanceIndexThumb(hands) {
         const d = dist(ix, iy, tx, ty);
         const pinching = d < THRESHOLD_PX;
 
-        if (pinching) {
+        // remove expensive immediate drawing (enable only for debug)
+        if (pinching && typeof window !== 'undefined' && window.DEBUG_PINCH_DRAW) {
             textSize(32);
             fill(255, 0, 0);
             text('Pinching!', ix + 10, iy - 10);
         }
-
+        
         results.push({
             hand: i,
             pinching,

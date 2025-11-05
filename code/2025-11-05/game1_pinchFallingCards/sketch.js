@@ -66,14 +66,38 @@ function draw() {
         videoDrawX = (width - videoDrawW) / 2;
       }
 
+
+      // draw the video
       image(videoElement, videoDrawX, videoDrawY, videoDrawW, videoDrawH);
     }
+
+    
   }
+
+ // background image
+  image(bkgimage, 0, 0, width, height);
+  // mask to darken the area outside the video
+  noStroke();
+  fill(0);
+  // left
+  rect(0, 0, videoDrawX, height);
+  // right
+  rect(videoDrawX + videoDrawW, 0, width - (videoDrawX + videoDrawW), height);
+  // top
+  rect(videoDrawX, 0, videoDrawW, videoDrawY);
+  // bottom
+  rect(
+    videoDrawX,
+    videoDrawY + videoDrawH,
+    videoDrawW,
+    height - (videoDrawY + videoDrawH)
+  );
+ 
 
 
   // fonction qui fait tomber des carrés du haut de l'écran 
   fallingCards();
-  image(fireImg, videoDrawX, videoDrawY + videoDrawH - 300, videoDrawW, 300);
+  image(fireImg, videoDrawX, videoDrawY + videoDrawH - 200, videoDrawW, 300);
 
 
 
@@ -88,8 +112,8 @@ function draw() {
 
 }
 
-
 // preload function to load images
 function preload() {
   fireImg = loadImage('./img/fire_template_1.png'); // adjust path as needed
+  bkgimage = loadImage('./img/background0087.png'); // adjust path as needed
 }
