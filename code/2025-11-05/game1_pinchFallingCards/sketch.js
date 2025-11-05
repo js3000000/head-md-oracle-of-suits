@@ -11,7 +11,7 @@ let gameStarted = false;
 let handdetected = false;
 let landmarks = null; // keep last known landmarks
 
-let portalImg; // added: preload the portal image
+let fireImg; // added: preload the fire image
 
 function setup() {
 
@@ -34,6 +34,7 @@ function draw() {
   background(0);
 
   // --- Video webcam drawing ------------------------------------
+  
   if (isVideoReady()) {
     const vw =
       (videoElement.elt && videoElement.elt.videoWidth) ||
@@ -86,8 +87,6 @@ function draw() {
   }
 
 }
-
-
 
 
 // preload function to load images
