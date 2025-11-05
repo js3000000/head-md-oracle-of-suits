@@ -1,5 +1,5 @@
 // fonction qui test si deux index se touchent
-const THRESHOLD = 0.03;  // seuil en coordonnées normalisées (ajuster si besoin)
+const THRESHOLD = 0.027;  // seuil en coordonnées normalisées (ajuster si besoin)
 
 function checkDistanceIndex(hands) {
 

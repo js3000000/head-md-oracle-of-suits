@@ -1,0 +1,102 @@
+// area where the video is drawn on the canvas (used to map normalized landmarks)
+let videoDrawX = 0;
+let videoDrawY = 0;
+let videoDrawW = 0;
+let videoDrawH = 0;
+
+let videoAspect;
+let videoStarted = false; // prevent double camera start
+
+let gameStarted = false;
+let handdetected = false;
+let landmarks = null; // keep last known landmarks
+
+let portalImg; // added: preload the portal image
+
+function setup() {
+
+  createCanvas(windowWidth, windowHeight);
+  pixelDensity(1);
+
+  if (!videoStarted) {
+    setupVideo();
+    videoStarted = true;
+  }
+
+  setupHands();
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}
+
+function draw() {
+  background(0);
+
+  // --- Video webcam drawing ------------------------------------
+  if (isVideoReady()) {
+    const vw =
+      (videoElement.elt && videoElement.elt.videoWidth) ||
+      videoElement.width ||
+      0;
+    const vh =
+      (videoElement.elt && videoElement.elt.videoHeight) ||
+      videoElement.height ||
+      0;
+
+    if (vw <= 0 || vh <= 0) {
+      videoDrawX = 0;
+      videoDrawY = 0;
+      videoDrawW = 0;
+      videoDrawH = 0;
+    } else {
+      const canvasAR = width / height;
+      const videoAR = vw / vh;
+
+      if (videoAR > canvasAR) {
+        videoDrawW = width;
+        videoDrawH = width / videoAR;
+        videoDrawX = 0;
+        videoDrawY = (height - videoDrawH) / 2;
+      } else {
+        videoDrawH = height;
+        videoDrawW = height * videoAR;
+        videoDrawY = 0;
+        videoDrawX = (width - videoDrawW) / 2;
+      }
+
+      image(videoElement, videoDrawX, videoDrawY, videoDrawW, videoDrawH);
+    }
+  }
+
+  // --- Hand landmarks drawing ------------------------------------
+  if (detections) {
+    for (let hand of detections.multiHandLandmarks) {
+
+      drawIndex(hand);
+      drawthumb(hand);
+
+      // fonction qui fait tomber des carrés du haut de l'écran 
+      fallingCards();
+
+      // todo : dessiner carte qui tombent
+
+
+    }
+  }
+
+}
+
+// helper: check landmark arrays are valid and contain index tip coords
+function landmarkSafe(landmarks) {
+  try {
+    return (
+      landmarks[0] && landmarks[1] &&
+      landmarks[0].length > 8 && landmarks[1].length > 8 &&
+      typeof landmarks[0][8].x === 'number' && typeof landmarks[0][8].y === 'number' &&
+      typeof landmarks[1][8].x === 'number' && typeof landmarks[1][8].y === 'number'
+    );
+  } catch (e) {
+    return false;
+  }
+}
