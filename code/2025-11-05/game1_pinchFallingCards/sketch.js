@@ -23,7 +23,7 @@ function setup() {
     videoStarted = true;
   }
 
-  //setupHands();
+  setupHands();
 }
 
 function windowResized() {
@@ -72,20 +72,20 @@ function draw() {
 
   // fonction qui fait tomber des carrés du haut de l'écran 
   fallingCards();
-  image(fireImg, videoDrawX, videoDrawY + videoDrawH-300, videoDrawW, 300);
+  image(fireImg, videoDrawX, videoDrawY + videoDrawH - 300, videoDrawW, 300);
 
 
 
   // --- Hand landmarks drawing ------------------------------------
- /*  if (detections) {
+  if (detections) {
     for (let hand of detections.multiHandLandmarks) {
 
-      //drawIndex(hand);
-      //drawthumb(hand);
+      drawIndex(hand);
+      drawthumb(hand);
 
 
     }
-  } */
+  }
 
 }
 
