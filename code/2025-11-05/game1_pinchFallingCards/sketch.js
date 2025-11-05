@@ -82,26 +82,12 @@ function draw() {
 
       drawIndex(hand);
       drawthumb(hand);
-
-
     }
   }
 
 }
 
-// helper: check landmark arrays are valid and contain index tip coords
-function landmarkSafe(landmarks) {
-  try {
-    return (
-      landmarks[0] && landmarks[1] &&
-      landmarks[0].length > 8 && landmarks[1].length > 8 &&
-      typeof landmarks[0][8].x === 'number' && typeof landmarks[0][8].y === 'number' &&
-      typeof landmarks[1][8].x === 'number' && typeof landmarks[1][8].y === 'number'
-    );
-  } catch (e) {
-    return false;
-  }
-}
+
 
 
 // preload function to load images

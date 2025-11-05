@@ -34,35 +34,9 @@ function fallingCards() {
     rect(card.x, card.y, 50, 70); // Dessiner une carte rouge
     circle(card.x + 25, card.y + 35, 10); // Dessiner un cercle au centre de la carte
   }
-
   if (detections) {
-    const landmarks = detections.multiHandLandmarks;
-    if (landmarkSafe(landmarks)) {
-      for (let hand of landmarks) {
-        // index finger tip coordinates
-        const indexTipX = hand[8].x * width;
-        const indexTipY = hand[8].y * height;
-
-        // thumb tip coordinates
-        const thumbTipX = hand[4].x * width;
-        const thumbTipY = hand[4].y * height;
-
-
-        // check if the index is pinching the thumb
-        const d = dist(indexTipX, indexTipY, thumbTipX, thumbTipY);
-        if (d < 30) {
-          //messageA = "pinching";
-          textSize(32);
-          fill(255, 0, 0);
-          text('Pinching!', indexTipX + 10, indexTipY - 10);
-
-
-        }
-      }
-    }
+    checkDistanceIndexThumb(detections);
   }
-
-
 
 
 }

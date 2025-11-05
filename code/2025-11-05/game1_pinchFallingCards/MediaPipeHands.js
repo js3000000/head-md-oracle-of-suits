@@ -16,23 +16,8 @@ const hands = window.hands;
 const FINGER_TIPS = {
   thumb: 4,
   index: 8,
-  middle: 12,
-  ring: 16,
-  pinky: 20
 };
 
-const HAND_CONNECTIONS = [
-    // wrist to thumb
-    [0, 1], [1, 2], [2, 3], [3, 4],
-    // wrist to index
-    [0, 5], [5, 6], [6, 7], [7, 8],
-    /* // middle
-    [0, 9], [9, 10], [10, 11], [11, 12],
-    // ring
-    [0, 13], [13, 14], [14, 15], [15, 16],
-    // pinky
-    [0, 17], [17, 18], [18, 19], [19, 20] */
-];
 
 // Optional helper to set default options from one place
 window.initHands = (opts = {}) => {
@@ -47,10 +32,13 @@ window.initHands = (opts = {}) => {
     return window.hands;
 };
 
+let webcamH = 1920;
+let webcamW = 1080;
+
 function setupVideo(selfieMode = true) {
     // create a hidden video element that MediaPipe Camera util will use
     videoElement = createCapture(VIDEO, { flipped: selfieMode });
-    videoElement.size(640, 480);
+    videoElement.size(webcamW, webcamH);
     videoElement.hide();
 
     // Use MediaPipe Camera util to feed frames from the p5 video element
@@ -59,8 +47,8 @@ function setupVideo(selfieMode = true) {
         onFrame: async () => {
             await hands.send({ image: videoElement.elt });
         },
-        width: 640,
-        height: 480
+        width: webcamW,
+        height: webcamH
     });
 
     cam.start();
@@ -90,4 +78,18 @@ function onHandsResults(results) {
 // move the videoElement && videoElement.loadedmetadata checks to here
 function isVideoReady() {
     return videoElement && videoElement.loadedmetadata;
+}
+
+// helper: check landmark arrays are valid and contain index tip coords
+function landmarkSafe(landmarks) {
+  try {
+    return (
+      landmarks[0] && landmarks[1] &&
+      landmarks[0].length > 8 && landmarks[1].length > 8 &&
+      typeof landmarks[0][8].x === 'number' && typeof landmarks[0][8].y === 'number' &&
+      typeof landmarks[1][8].x === 'number' && typeof landmarks[1][8].y === 'number'
+    );
+  } catch (e) {
+    return false;
+  }
 }
