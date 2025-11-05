@@ -8,12 +8,16 @@ function fallingCards() {
   const card = {
     x: (random(videoDrawW) + videoDrawX),
     y: -70,
-    speed: 2,
+    speed: 3,
   };
-  fallingCards.cards.push(card);
+
+  // ajouter un délai pour l'apparition des cartes
+  if (frameCount % 20 === 0) {
+    fallingCards.cards.push(card);
+  }
 
   // Mettre à jour la position des cartes tombantes
-  for (let i = fallingCards.cards.length - 1; i >= 0; i--) {
+  for (let i = fallingCards.cards.length - 1; i >= 0; --i) {
     const card = fallingCards.cards[i];
     card.y += card.speed;
 

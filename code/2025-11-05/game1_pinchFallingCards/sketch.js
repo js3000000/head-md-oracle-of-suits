@@ -23,7 +23,7 @@ function setup() {
     videoStarted = true;
   }
 
-  setupHands();
+  //setupHands();
 }
 
 function windowResized() {
@@ -72,18 +72,20 @@ function draw() {
 
   // fonction qui fait tomber des carrés du haut de l'écran 
   fallingCards();
-  image(portalImg, videoDrawX, videoDrawY + videoDrawH-300, videoDrawW, 300);
+  image(fireImg, videoDrawX, videoDrawY + videoDrawH-300, videoDrawW, 300);
+
 
 
   // --- Hand landmarks drawing ------------------------------------
-  if (detections) {
+ /*  if (detections) {
     for (let hand of detections.multiHandLandmarks) {
 
-      drawIndex(hand);
-      drawthumb(hand);
+      //drawIndex(hand);
+      //drawthumb(hand);
+
 
     }
-  }
+  } */
 
 }
 
@@ -104,5 +106,5 @@ function landmarkSafe(landmarks) {
 
 // preload function to load images
 function preload() {
-  portalImg = loadImage('./img/fire_template_1.png'); // adjust path as needed
+  fireImg = loadImage('./img/fire_template_1.png'); // adjust path as needed
 }
