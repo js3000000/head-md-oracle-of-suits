@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Accueil — Oracle of Suits</title>
+  <style>
+    @font-face {
+      font-family: 'ABCMaxiRound';
+      src: url('Assets/Typo/ABCMaxiRoundEdu-Bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      background: #0b0b0b;
+      color: #fff;
+      font-family: 'ABCMaxiRound', "Helvetica Neue", Arial, sans-serif;
+    }
+
+    #sketch-holder {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      /* top:0; right:0; bottom:0; left:0; */
+      display: flex;
+      /* centre vertical */
+      justify-content: center;
+      /* centre horizontal */
+      z-index: 10;
+      color: #fff;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+      pointer-events: none;
+      /* laisse la page cliquer sous le overlay si nécessaire */
+      /*text-align: center;*/
+    }
+
+    .title {
+      font-size: 135px;
+      font-weight: 700;
+      margin: 0 0 8px 0;
+      letter-spacing: 0.6px;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      margin: 0 0 16px 0;
+      opacity: 0.9;
+    }
+
+    .cta {
+      display: inline-block;
+      padding: 10px 16px;
+      background: #1e90ff;
+      color: white;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      box-shadow: 0 6px 18px rgba(30, 144, 255, 0.14);
+    }
+
+    #loading {
+      position: absolute;
+      right: 24px;
+      top: 24px;
+      z-index: 11;
+      color: #ddd;
+      font-size: 14px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 8px 10px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="sketch-holder">
+    <div class="overlay">
+      <h1 class="title">KRONOCARD</h1>
+      <!-- <p class="subtitle">Exploration visuelle — page d'accueil</p>
+      <a class="cta" href="#explore">Découvrir</a> -->
+    </div>
+    <div id="loading">Chargement...</div>
+  </div>
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.6.0/lib/p5.min.js"></script>
+  <script src="sketch.js" type="text/javascript"></script>
+</body>
+
+</html>
