@@ -66,22 +66,3 @@ function drawConnections(landmarks) {
 }
 
 
-/* function drawLandmarks(landmarks) {
-  fill(255, 0, 0);
-  noStroke();
-  for (let mark of landmarks) {
-    const lx = mark.x * videoDrawW + videoDrawX;
-    const ly = mark.y * videoDrawH + videoDrawY;
-    circle(lx, ly, 6);
-  }
-
-  // dessiner un cercle à la position du poignet (landmark 0)
-  let wrist = landmarks[0];
-  const wx = wrist.x * videoDrawW + videoDrawX;
-  const wy = wrist.y * videoDrawH + videoDrawY;
-  fill(255, 255, 0);
-  circle(wx, wy, 10);
-} */
-
-
-

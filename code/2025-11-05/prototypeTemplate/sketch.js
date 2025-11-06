@@ -41,6 +41,7 @@ function draw() {
 
 
   if (isVideoReady()) {
+    
     // draw the video preserving aspect ratio (contain / letterbox inside canvas)
     // get the actual video intrinsic size when available
     const vw = (videoElement.elt && videoElement.elt.videoWidth) || videoElement.width || 0;
@@ -72,9 +73,6 @@ function draw() {
         videoDrawX = (width - videoDrawW) / 2;
       }
 
-
-  
-
       // draw the video into the computed rectangle
       image(videoElement, videoDrawX, videoDrawY, videoDrawW, videoDrawH);
 
@@ -85,9 +83,6 @@ function draw() {
     // video not ready yet — leave draw rect empty so we don't place the piece
     videoDrawX = 0; videoDrawY = 0; videoDrawW = 0; videoDrawH = 0;
   } // end of video ready + setup
-
-  // place the scene in the 
-  // todo:
 
   /* 
     if (detections) {
@@ -101,9 +96,11 @@ function draw() {
 
 
   // todo afficher musee
-
-
+  
 
 
 
 } // end setup
+
+
+// function

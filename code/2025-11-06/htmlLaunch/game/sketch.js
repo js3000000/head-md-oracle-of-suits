@@ -22,6 +22,14 @@ function normXToPx(normX) {
   return videoDrawX + (MIRROR_VIDEO ? (1 - normX) * videoDrawW : normX * videoDrawW);
 }
 
+// preload function to load images
+function preload() {
+  fireImg = loadImage('./img/fire_template_1.png'); // adjust path as needed
+  bkgimage = loadImage('./img/background0087.png'); // adjust path as needed
+  cardModel = loadModel('./img/Card.obj', true); // adjust path as needed
+  cardTexture = loadImage('./img/IMG_4528.jpg'); // adjust path as needed
+}
+
 function setup() {
 
   // use WEBGL to enable model()
@@ -172,12 +180,4 @@ function draw() {
     pop();
   }
 
-}
-
-// preload function to load images
-function preload() {
-  fireImg = loadImage('./img/fire_template_1.png'); // adjust path as needed
-  bkgimage = loadImage('./img/background0087.png'); // adjust path as needed
-  cardModel = loadModel('./img/Card.obj', true); // adjust path as needed
-  cardTexture = loadImage('./img/IMG_4528.jpg'); // adjust path as needed
 }

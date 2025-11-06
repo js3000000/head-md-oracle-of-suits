@@ -17,6 +17,10 @@ let bkg;
 // Mirror toggle: true => draw webcam mirrored (like a typical selfie view)
 const MIRROR_VIDEO = true;
 
+// globals (near top of file)
+let windowMaskGraphics = null;
+const MASK_CORNER_RADIUS = 80;
+
 // helper: convert normalized landmark.x (0..1) to pixel x inside the drawn video rectangle
 function normXToPx(normX) {
   // if MIRROR_VIDEO is true we flip the normalized x coordinate horizontally
@@ -100,7 +104,7 @@ function draw() {
       push();
       translate(-width / 2, -height / 2, 0);
 
-      if (MIRROR_VIDEO) {
+  /*     if (MIRROR_VIDEO) {
         // draw mirrored: translate to the right edge of the video rectangle then flip horizontally
         push();
         translate(videoDrawX + videoDrawW, videoDrawY);
@@ -109,30 +113,79 @@ function draw() {
         pop();
       } else {
         image(videoElement, videoDrawX, videoDrawY, videoDrawW, videoDrawH);
-      }
+      } */
 
       pop();
     }
   }
 
+  
+
   // ajouter camera avec webgl et z depth et centrée
   push();
-  translate(-width / 2, -height / 2, 0);
+  translate(-width / 2, -height / 2, -100);
   // dessiner le background avec transparence
   tint(255, 200); // régler la transparence ici (0-255)
   image(bkg, 0, 0, width, height);
 
   pop();
 
-/*   // drawrobot 3d model
+  // afficher robot 3D au centre
   push();
-  translate(width / 2, height / 2 + 100);
-  scale(1);
   noStroke();
-  ambientLight(150);
-  directionalLight(255, 255, 255, 0, -1, 0);
+  translate(0, 0, -100);
+  // tourner robot de 180
+  //rotateY(-2*PI);
+  // ambient light
+  ambientLight(160);
+  // directional light
+  directionalLight(200, 255, 255, -0.5, -3, -0.5);
+  pointLight(255, 255, 255, -3000, -2000, 700);
+  scale(0.5);
   model(robotModel);
-  pop(); */
+  pop();
+
+  // ---- CACHE VERTICAL (rounded window) ----
+  push();
+  translate(-width / 2, -height / 2, 0);
+
+  const visibleRatio = 0.45; // visible width ratio
+  const visibleW = width * visibleRatio;
+  const visibleX = (width - visibleW) / 2;
+
+  // create / refresh mask graphics when size changes
+  if (!windowMaskGraphics || windowMaskGraphics.width !== width || windowMaskGraphics.height !== height || windowMaskGraphics._visibleW !== visibleW) {
+    windowMaskGraphics = createGraphics(width, height);
+    // draw mask: full opaque black then "cut out" rounded rect (destination-out)
+    const mg = windowMaskGraphics;
+    mg.clear();
+    mg.noStroke();
+    mg.fill(0);
+    mg.rect(0, 0, width, height);
+    // cut out rounded rect
+    const ctx = mg.drawingContext;
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-out';
+    mg.fill(255);
+    mg.rect(visibleX, 0, visibleW, height, MASK_CORNER_RADIUS);
+    ctx.restore();
+    // store for cheap resize check
+    mg._visibleW = visibleW;
+    mg._visibleX = visibleX;
+  }
+
+  // draw the mask over the whole canvas (it has a transparent rounded window)
+  // in WEBGL mode we must draw with top-left origin
+  imageMode(CORNER);
+  image(windowMaskGraphics, 0, 0);
+
+  // optional: draw luminous rounded border around the window
+  noFill();
+  stroke(255, 200);
+  strokeWeight(70);
+  rect(visibleX + 2, 2, visibleW - 4, height - 4, MASK_CORNER_RADIUS);
+
+  pop();
 
 
   noStroke();
@@ -237,8 +290,25 @@ function draw() {
 
     // draw portal image using stored pos/size (centered)
     {
-      const drawPos = (typeof window !== 'undefined' && window._portalPos) ? window._portalPos : (portalPosXY || { x: width / 2, y: height / 2 });
+      const drawPosRaw = (typeof window !== 'undefined' && window._portalPos) ? window._portalPos : (portalPosXY || { x: width / 2, y: height / 2 });
       const drawSize = (typeof window !== 'undefined' && window._portalSize) ? window._portalSize : 0;
+
+      // compute visible window used by the mask (must match CACHE VERTICAL)
+      const visibleRatio = 0.45;
+      const visibleW = width * visibleRatio;
+      const visibleX = (width - visibleW) / 2;
+
+      // copy and mirror horizontally inside the video / visible rect if needed
+      let drawPos = { x: drawPosRaw.x, y: drawPosRaw.y };
+
+      // choose mirror reference: prefer actual video rect if ready, otherwise use the visible window
+      const refX = (videoDrawW > 0) ? videoDrawX : visibleX;
+      const refW = (videoDrawW > 0) ? videoDrawW : visibleW;
+
+      if (MIRROR_VIDEO && refW > 0) {
+        // mirror drawPos.x inside [refX, refX + refW]
+        drawPos.x = refX + refW - (drawPos.x - refX);
+      }
 
       if (portalImg && drawSize > 0) {
         push();
@@ -246,14 +316,16 @@ function draw() {
         translate(-width / 2, -height / 2, 0);
 
         // clip to webcam rectangle using WebGL scissor when in WEBGL renderer
-        if (videoDrawW > 0 && videoDrawH > 0 && drawingContext && drawingContext.SCISSOR_TEST !== undefined) {
+        const scissorX = (videoDrawW > 0) ? videoDrawX : visibleX;
+        const scissorW = (videoDrawW > 0) ? videoDrawW : visibleW;
+        if (scissorW > 0 && drawingContext && drawingContext.SCISSOR_TEST !== undefined) {
           const gl = drawingContext;
           gl.enable(gl.SCISSOR_TEST);
           // WebGL scissor uses bottom-left origin, p5 canvas uses top-left
-          const sx = Math.round(videoDrawX);
-          const sy = Math.round(height - (videoDrawY + videoDrawH));
-          const sw = Math.round(videoDrawW);
-          const sh = Math.round(videoDrawH);
+          const sx = Math.round(scissorX);
+          const sy = Math.round(height - (0 + height));
+          const sw = Math.round(scissorW);
+          const sh = Math.round(height);
           gl.scissor(sx, sy, sw, sh);
 
           imageMode(CENTER);

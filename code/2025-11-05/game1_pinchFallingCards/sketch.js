@@ -34,7 +34,7 @@ function draw() {
   background(0);
 
   // --- Video webcam drawing ------------------------------------
-  
+
   if (isVideoReady()) {
     const vw =
       (videoElement.elt && videoElement.elt.videoWidth) ||
@@ -71,28 +71,19 @@ function draw() {
       image(videoElement, videoDrawX, videoDrawY, videoDrawW, videoDrawH);
     }
 
-    
+
   }
 
- // background image
+  // background image
   image(bkgimage, 0, 0, width, height);
   // mask to darken the area outside the video
   noStroke();
   fill(0);
-  // left
-  rect(0, 0, videoDrawX, height);
-  // right
-  rect(videoDrawX + videoDrawW, 0, width - (videoDrawX + videoDrawW), height);
-  // top
-  rect(videoDrawX, 0, videoDrawW, videoDrawY);
-  // bottom
-  rect(
-    videoDrawX,
-    videoDrawY + videoDrawH,
-    videoDrawW,
-    height - (videoDrawY + videoDrawH)
-  );
- 
+  rect(0, 0, videoDrawX, height);   // left
+  rect(videoDrawX + videoDrawW, 0, width - (videoDrawX + videoDrawW), height); // right
+  rect(videoDrawX, 0, videoDrawW, videoDrawY); // top
+  rect(videoDrawX,videoDrawY + videoDrawH,videoDrawW,height - (videoDrawY + videoDrawH)); // bottom
+
 
 
   // fonction qui fait tomber des carrés du haut de l'écran 
@@ -116,4 +107,5 @@ function draw() {
 function preload() {
   fireImg = loadImage('./img/fire_template_1.png'); // adjust path as needed
   bkgimage = loadImage('./img/background0087.png'); // adjust path as needed
+
 }
