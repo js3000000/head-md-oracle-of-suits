@@ -36,6 +36,10 @@ function setup() {
   setupHands();
 }
 
+function mousePressed() {
+  window.location.href = "../onboarding/index.html";
+}
+
 function windowResized() {
   // keep WEBGL renderer when resizing and re-position camera
   resizeCanvas(windowWidth, windowHeight, WEBGL);

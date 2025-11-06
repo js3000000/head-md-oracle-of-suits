@@ -18,11 +18,13 @@ function preload() {
   // load the portal image once
   portalImg = loadImage('./img/portal_alpha.png');
   bkg = loadImage('./img/onboarding_bckground.jpg');
+
+  robotModel = loadModel('./Assets/Head.obj', true);
 }
 
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  createCanvas(windowWidth, windowHeight, WEBGL);
   pixelDensity(1);
 
   if (!videoStarted) {
@@ -32,15 +34,21 @@ function setup() {
 
   setupHands();
 
- // 🔁 Redirection automatique après 20 secondes
-  setTimeout(() => {
-    window.location.href = "../game/index.html";
-  }, 20000);
+  // 🔁 Redirection automatique après 20 secondes
+  /*  setTimeout(() => {
+     window.location.href = "../game/index.html";
+   }, 20000); */
+
 
 }
 
+function mousePressed() {
+  window.location.href = "../game/index.html";
+}
+
+
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
+  resizeCanvas(windowWidth, windowHeight, WEBGL);
 }
 
 function draw() {
@@ -78,14 +86,36 @@ function draw() {
         videoDrawX = (width - videoDrawW) / 2;
       }
 
+
       //image(videoElement, videoDrawX, videoDrawY, videoDrawW, videoDrawH);
+
+      // dessiner la video au centre de la fenêtre
+      push();
+      translate(-width / 2, -height / 2, 0);
+      image(videoElement, videoDrawX, videoDrawY, videoDrawW, videoDrawH);
+      pop();
     }
   }
 
-  // draw background image
-  if (bkg) {
-    image(bkg, 0, 0, width, height);
-  }
+  // ajouter camera avec webgl et z depth et centrée
+  push();
+  translate(-width / 2, -height / 2, 0);
+  // dessiner le background avec transparence
+  tint(255, 200); // régler la transparence ici (0-255)
+  image(bkg, 0, 0, width, height);
+  // dessiner la video
+
+  pop();
+
+/*   // drawrobot 3d model
+  push();
+  translate(width / 2, height / 2 + 100);
+  scale(1);
+  noStroke();
+  ambientLight(150);
+  directionalLight(255, 255, 255, 0, -1, 0);
+  model(robotModel);
+  pop(); */
 
 
   noStroke();
