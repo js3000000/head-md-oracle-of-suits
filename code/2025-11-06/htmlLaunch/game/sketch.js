@@ -14,6 +14,14 @@ let landmarks = null; // keep last known landmarks
 let fireImg; // added: preload the fire image
 let cameraMain;
 
+// Mirror toggle: true => draw webcam mirrored (selfie view)
+const MIRROR_VIDEO = true;
+
+// helper: convert normalized landmark.x (0..1) to pixel x inside the drawn video rectangle
+function normXToPx(normX) {
+  return videoDrawX + (MIRROR_VIDEO ? (1 - normX) * videoDrawW : normX * videoDrawW);
+}
+
 function setup() {
 
   // use WEBGL to enable model()
@@ -95,8 +103,17 @@ function draw() {
       }
 
 
-      // draw the video
-      image(videoElement, videoDrawX, videoDrawY, videoDrawW, videoDrawH);
+      // draw the video (mirrored if MIRROR_VIDEO)
+      if (MIRROR_VIDEO) {
+        push();
+        // translate to the right edge of the video rect then flip horizontally
+        translate(videoDrawX + videoDrawW, videoDrawY);
+        scale(-1, 1);
+        image(videoElement, 0, 0, videoDrawW, videoDrawH);
+        pop();
+      } else {
+        image(videoElement, videoDrawX, videoDrawY, videoDrawW, videoDrawH);
+      }
       
     }
 

@@ -14,6 +14,15 @@ let landmarks = null; // keep last known landmarks
 let portalImg; // added: preload the portal image
 let bkg;
 
+// Mirror toggle: true => draw webcam mirrored (like a typical selfie view)
+const MIRROR_VIDEO = true;
+
+// helper: convert normalized landmark.x (0..1) to pixel x inside the drawn video rectangle
+function normXToPx(normX) {
+  // if MIRROR_VIDEO is true we flip the normalized x coordinate horizontally
+  return videoDrawX + (MIRROR_VIDEO ? (1 - normX) * videoDrawW : normX * videoDrawW);
+}
+
 function preload() {
   // load the portal image once
   portalImg = loadImage('./img/portal_alpha.png');
@@ -87,12 +96,21 @@ function draw() {
       }
 
 
-      //image(videoElement, videoDrawX, videoDrawY, videoDrawW, videoDrawH);
-
       // dessiner la video au centre de la fenêtre
       push();
       translate(-width / 2, -height / 2, 0);
-      image(videoElement, videoDrawX, videoDrawY, videoDrawW, videoDrawH);
+
+      if (MIRROR_VIDEO) {
+        // draw mirrored: translate to the right edge of the video rectangle then flip horizontally
+        push();
+        translate(videoDrawX + videoDrawW, videoDrawY);
+        scale(-1, 1);
+        image(videoElement, 0, 0, videoDrawW, videoDrawH);
+        pop();
+      } else {
+        image(videoElement, videoDrawX, videoDrawY, videoDrawW, videoDrawH);
+      }
+
       pop();
     }
   }
@@ -103,7 +121,6 @@ function draw() {
   // dessiner le background avec transparence
   tint(255, 200); // régler la transparence ici (0-255)
   image(bkg, 0, 0, width, height);
-  // dessiner la video
 
   pop();
 
@@ -119,6 +136,12 @@ function draw() {
 
 
   noStroke();
+
+  // For 2D overlay drawing (fingertips, connections, portal) we need a top-left origin
+  // because the canvas is created with WEBGL (center origin). Translate once so
+  // the helper functions (which use pixel coords) can draw naturally.
+  push();
+  translate(-width / 2, -height / 2, 0);
 
   // --- Hand Detection & Portal Activation ----------------
   if (detections || portalActivated) {
@@ -145,6 +168,9 @@ function draw() {
     }
   }
 
+  // restore transform after 2D overlay drawing
+  pop();
+
   // --- Draw the portal even if no hands are visible -------
   if (portalActivated) {
     // PARAMETERS for auto-grow behavior (can be overridden on window)
@@ -168,11 +194,11 @@ function draw() {
       const index1 = landmarks[0][INDEX_TIP];
       const index2 = landmarks[1][INDEX_TIP];
 
-      // conversion en pixels
-      const x1 = index1.x * videoDrawW + videoDrawX;
-      const y1 = index1.y * videoDrawH + videoDrawY;
-      const x2 = index2.x * videoDrawW + videoDrawX;
-      const y2 = index2.y * videoDrawH + videoDrawY;
+  // conversion en pixels (take mirror into account)
+  const x1 = normXToPx(index1.x);
+  const y1 = index1.y * videoDrawH + videoDrawY;
+  const x2 = normXToPx(index2.x);
+  const y2 = index2.y * videoDrawH + videoDrawY;
 
       const dx = x1 - x2;
       const dy = y1 - y2;
@@ -216,19 +242,30 @@ function draw() {
 
       if (portalImg && drawSize > 0) {
         push();
-        // clip to webcam rectangle so anything outside video area is hidden
-        if (videoDrawW > 0 && videoDrawH > 0) {
-          // use native canvas clipping (more reliable than p5.clip in some builds)
-          drawingContext.save();
-          drawingContext.beginPath();
-          drawingContext.rect(videoDrawX, videoDrawY, videoDrawW, videoDrawH);
-          drawingContext.clip();
-        }
-        imageMode(CENTER);
-        noStroke();
-        image(portalImg, drawPos.x, drawPos.y, drawSize, drawSize);
-        if (videoDrawW > 0 && videoDrawH > 0) {
-          drawingContext.restore();
+        // translate to top-left origin so drawPos (in px) maps correctly in WEBGL mode
+        translate(-width / 2, -height / 2, 0);
+
+        // clip to webcam rectangle using WebGL scissor when in WEBGL renderer
+        if (videoDrawW > 0 && videoDrawH > 0 && drawingContext && drawingContext.SCISSOR_TEST !== undefined) {
+          const gl = drawingContext;
+          gl.enable(gl.SCISSOR_TEST);
+          // WebGL scissor uses bottom-left origin, p5 canvas uses top-left
+          const sx = Math.round(videoDrawX);
+          const sy = Math.round(height - (videoDrawY + videoDrawH));
+          const sw = Math.round(videoDrawW);
+          const sh = Math.round(videoDrawH);
+          gl.scissor(sx, sy, sw, sh);
+
+          imageMode(CENTER);
+          noStroke();
+          image(portalImg, drawPos.x, drawPos.y, drawSize, drawSize);
+
+          gl.disable(gl.SCISSOR_TEST);
+        } else {
+          // fallback (2D renderer or no scissor support)
+          imageMode(CENTER);
+          noStroke();
+          image(portalImg, drawPos.x, drawPos.y, drawSize, drawSize);
         }
         pop();
       }

@@ -27,8 +27,8 @@ function portalPosition(landmarks) {
   // position y = milieu entre le point milieu des index et le point milieu des pouces
   const portalY = (touchY + thumbY) / 2;
 
-  // convertir coordonnées normalisées en pixels
-  const px = portalX * videoDrawW + videoDrawX;
+  // convertir coordonnées normalisées en pixels (gère miroir)
+  const px = normXToPx(portalX);
   const py = portalY * videoDrawH + videoDrawY;
 
   return { x: px, y: py };
@@ -60,10 +60,10 @@ function drawPortal(landmarks) {
   const index1 = landmarks[0][INDEX_TIP];
   const index2 = landmarks[1][INDEX_TIP];
 
-  // conversion en pixels
-  const x1 = index1.x * videoDrawW + videoDrawX;
+  // conversion en pixels (gère miroir)
+  const x1 = normXToPx(index1.x);
   const y1 = index1.y * videoDrawH + videoDrawY;
-  const x2 = index2.x * videoDrawW + videoDrawX;
+  const x2 = normXToPx(index2.x);
   const y2 = index2.y * videoDrawH + videoDrawY;
 
   // distance entre les deux index
