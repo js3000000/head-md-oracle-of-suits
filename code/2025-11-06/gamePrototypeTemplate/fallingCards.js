@@ -3,7 +3,40 @@ function fallingCards() {
   // Créer un tableau pour stocker les cartes tombantes
   if (typeof fallingCards.cards === 'undefined') {
     fallingCards.cards = [];
+    // marque le démarrage pour éviter qu'un lot existant n'apparaisse immédiatement
+    fallingCards._startMs = millis();
+    // compteur de cartes attrapées et configuration de fin de jeu
+    fallingCards.caughtCount = 0; // nombre de cartes attrapées
+    fallingCards._target = 10; // nombre de cartes à attraper pour terminer
+    fallingCards._gameOver = false; // drapeau fin de jeu
   }
+
+  // délai au démarrage : empêche l'affichage / spawn immédiat d'un tableau préexistant
+  const STARTUP_DELAY_MS = 800; // ajuster si besoin (ms)
+  const now = millis();
+  if (now - fallingCards._startMs <= STARTUP_DELAY_MS) {
+    // Ne pas spawn ni dessiner les cartes pendant la phase de démarrage
+    return;
+  }
+
+  // Si jeu terminé, afficher un overlay Game Over et arrêter tout traitement
+  if (fallingCards._gameOver) {
+    // Dessiner overlay 2D en utilisant origine top-left
+
+    
+    /* push();
+    translate(-width / 2, -height / 2);
+    noStroke();
+    fill(255, 220);
+    rect(0, 0, width, height);
+    fill(0);
+    textSize(48);
+    textAlign(CENTER, CENTER);
+    text(`Game Over\nScore: ${fallingCards.caughtCount}`, width / 2, height / 2);
+    pop(); */
+    return;
+  }
+
   // configurable limits (set window.MAX_CARDS from console to tune)
   const MAX_CARDS = (typeof window !== 'undefined' && window.MAX_CARDS) ? window.MAX_CARDS : 20; // limite le nombre de cartes actives
 
@@ -110,7 +143,18 @@ function fallingCards() {
 
           if (toRemove.size > 0) {
             // reconstruire le tableau sans les éléments supprimés (une seule allocation)
+            const removedCount = toRemove.size;
             fallingCards.cards = fallingCards.cards.filter((_, idx) => !toRemove.has(idx));
+
+            // incrémenter le compteur de cartes attrapées
+            fallingCards.caughtCount = (fallingCards.caughtCount || 0) + removedCount;
+
+            // vérifier si l'objectif est atteint
+            if (fallingCards.caughtCount >= (fallingCards._target || 10)) {
+              fallingCards._gameOver = true;
+              // vider le tableau pour supprimer les cartes restantes
+              fallingCards.cards = [];
+            }
           }
         }
       }

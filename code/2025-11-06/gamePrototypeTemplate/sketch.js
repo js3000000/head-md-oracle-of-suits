@@ -10,6 +10,9 @@ let videoStarted = false; // prevent double camera start
 // CAMERA ---------
 let camZ = 0;
 
+let timeTraveling = false;
+let portalActivated = false;
+
 /* // ONBOARDING SCENE ---------
 let robotModel;
 let frames = [];
@@ -45,6 +48,8 @@ let cardTexture;
 
 let cameraMain;
 
+let portalImg;
+
 
 // preload function to load images
 function preload() {
@@ -54,6 +59,9 @@ function preload() {
   design = loadFont('Assets/Typo/ABCMaxiRoundEdu-Regular.otf');
   robotModel = loadModel('Assets/Head.obj', true);
   backgroundImage = loadImage('Assets/Robot_test.jpg');
+
+  // Portal image
+  portalImg = loadImage('./img/portal_alpha.png');
 
 
   // Game 1: Falling Cards
@@ -157,11 +165,23 @@ function draw() {
   let currentTime = millis();
   const ONBOARDING_MS = 3000;
 
-  if (currentTime < ONBOARDING_MS) {
-    onboarding();
+  if (!timeTraveling) {
+
+    // passer l'objet `detections` au handler d'onboarding pour éviter
+    // les dépendances sur la variable globale et prévenir les erreurs.
+    onboarding(detections);
+
+    // restaurer la matrice après les overlays 2D (équilibre du push() initial)
+    pop();
+
+    // draw finger tips detections (maintenu pour compatibilité si besoin)
+   /*  if (detections) {
+      drawIndex(detections.multiHandLandmarks[0]);
+    } */
+
   } else {
 
-    // afficher image de fond APRES l'onboarding
+    // GAME 1: Falling Cards --------------------------------
 
     // background image ajouter z
     image(bkgimage, 0, 0, width, height);
@@ -190,62 +210,7 @@ function draw() {
 
   }
 
-  pop();
+  // todo : offboarding
 
 
-
-  // Game 1: Falling Cards --------------------------------
-  /* 
-  // background image ajouter z
-  //image(bkgimage, 0, 0, width, height);
- 
-  // 2D overlays such as the fire image
-  image(fireImg, videoDrawX, videoDrawY + videoDrawH - 200, videoDrawW, 300);
-  // mask to darken the area outside the video
-  noStroke();
-  fill(0);
-  // left
-  rect(0, 0, videoDrawX, height);
-  // right
-  rect(videoDrawX + videoDrawW, 0, width - (videoDrawX + videoDrawW), height);
-  // top
-  rect(videoDrawX, 0, videoDrawW, videoDrawY);
-  // bottom
-  rect(
-    videoDrawX,
-    videoDrawY + videoDrawH,
-    videoDrawW,
-    height - (videoDrawY + videoDrawH)
-  );
- 
-  pop(); // restore WEBGL center-origin for 3D drawing
- 
-  // --- 3D drawing: falling cards (models) -------------------------
-  fallingCards();
- 
-  // dessiner le feu AU DESSUS des modèles 3D
-  push();
-  translate(-width / 2, -height / 2);
-  // désactiver le test de profondeur pour que le quad 2D ne soit pas masqué par le depth buffer
-  if (typeof drawingContext !== 'undefined' && drawingContext) {
-    drawingContext.disable(drawingContext.DEPTH_TEST);
-  }
-  image(fireImg, videoDrawX, videoDrawY + videoDrawH - 200, videoDrawW, 300);
-  // réactiver le test de profondeur
-  if (typeof drawingContext !== 'undefined' && drawingContext) {
-    drawingContext.enable(drawingContext.DEPTH_TEST);
-  }
-  pop();
- 
-  // --- Hand landmarks drawing (as 2D overlays) -------------------
-  if (detections) {
-    push();
-    translate(-width / 2, -height / 2);
-    for (let hand of detections.multiHandLandmarks) {
- 
-      drawIndex(hand);
-      drawthumb(hand);
-    }
-    pop();
-  }*/
 }

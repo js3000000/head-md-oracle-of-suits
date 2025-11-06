@@ -125,7 +125,9 @@ function generateFrames() {
   // cacher le loading si nécessaire
   const loading = document.getElementById('loading');
   if (loading) loading.style.display = framesReady ? 'none' : 'block';
-}
+} // fin setup
+
+// DRAW -----------------------------
 
 function draw() {
   // dessiner l'image de fond sur le canvas principal (étirée pour couvrir)
@@ -165,26 +167,6 @@ function draw() {
     dy = (height - drawH) / 2;
   }
   image(img, dx, dy, drawW, drawH);
-
-  /* // overlay léger (optionnel)
-  noStroke();
-  fill(0, 0, 0, 80);
-  rect(0, height - 120, width, 120);
-
-  // texte en p5 (complément à l'overlay HTML)
-  textFont(design);
-  fill(255);
-  textAlign(LEFT, TOP);
-  textSize(20);
-  text('Oracle of Suits — Accueil', 32, height - 100);
-  textSize(14);
-  fill(220);
-  text('Cliquez pour pause / lecture — animation image par image du modèle 3D', 32, height - 68);
- */
-  // avancer l'index si en lecture (corrigé)
-  /* if (playing) {
-    frameIndex = (frameIndex + 1) % frames.length;
-  } */
 }
 
 
