@@ -31,6 +31,9 @@ function preload() {
   // load the portal image once
   portalImg = loadImage('./img/portal_alpha.png');
   bkg = loadImage('./img/onboarding_bckground.jpg');
+  //load video
+  tuto = createVideo('./Assets/tuto.mp4');
+
 
   robotModel = loadModel('./Assets/Head.obj', true);
 }
@@ -130,6 +133,12 @@ function draw() {
 
   pop();
 
+  // ajouter video tuto
+  push();
+  translate(-width / 2, -height / 2, 0);
+  image(tuto, width / 2 - 300, height / 2 - 200, 600, 400);
+  pop();
+
   // afficher robot 3D au centre
   push();
   noStroke();
@@ -173,6 +182,7 @@ function draw() {
     mg._visibleW = visibleW;
     mg._visibleX = visibleX;
   }
+
 
   // draw the mask over the whole canvas (it has a transparent rounded window)
   // in WEBGL mode we must draw with top-left origin
