@@ -10,6 +10,8 @@ function preload() {
   cacheLosange = loadImage('./img/diamond_cache.png');
 
   firesound = loadSound('./sound/fire.mp3');
+
+  cardModel = loadModel('./3dmodel/Card.obj', true);
 }
 
 function setup() {
@@ -35,7 +37,7 @@ function windowResized() {
 
 function draw() {
 
-  background(20);
+  background(250);
   // En WEBGL, l'origine (0,0) est le centre. Pour dessiner des éléments 2D en
   // coordonnées top-left (rect, etc.), on translate temporairement vers
   // -width/2, -height/2. Puis on reprend l'origine centrale pour dessiner
@@ -46,11 +48,16 @@ function draw() {
   translate(-width / 2, -height / 2);
 
   if (bkg) {
+    // reculer seulement le background dans les z sans affecter les barres/rects
+    push();
+    const bgDepth = -500; // ajuster la profondeur (valeur négative = plus loin)
+    translate(0, 0, bgDepth);
+
     // afficher l'image d'arrière-plan en gardant les proportions et en centrant
     const ratio = Math.max(width / bkg.width, height / bkg.height);
-    // ici width/2,height/2 est toujours le centre en coordonnées top-left
     imageMode(CENTER);
     image(bkg, width / 2, height / 2, bkg.width * ratio, bkg.height * ratio);
+    pop();
   }
 
   // mettre des barres noires en haut et en bas
@@ -77,6 +84,29 @@ function draw() {
     image(cacheLosange, 0, 0, cacheLosange.width * ratio, cacheLosange.height * ratio);
     pop();
   }
+
+  // Dessiner le modèle 3D de la carte au centre
+  if (cardModel) {
+    push();
+    // positionner la carte au centre
+    rotateX(-0.1); // légère inclinaison pour un meilleur effet 3D
+    rotateY(frameCount * 0.01); // rotation continue autour de l'axe Y
+    scale(2); // ajuster la taille si nécessaire
+    noStroke();
+    fill(255);
+    model(cardModel);
+    pop();
+  }
+
+  // afficher texte au centre au dessus de tout
+  push();
+  fill(255);
+  textAlign(CENTER, CENTER);
+  textSize(48);
+  text("Oracle of Suits", 0, 0);
+  pop();
+
+
 }
 
 // souris : molette pour zoomer/dézoomer (changer la profondeur Z de la caméra)
