@@ -1,6 +1,8 @@
 let bkg;
 let maskedImg;
 let cacheLosange;
+let cam;
+let camZ;
 
 function preload() {
   // charge l'image d'arrière-plan
@@ -12,10 +14,23 @@ function preload() {
 
 function setup() {
   createCanvas(windowWidth, windowHeight, WEBGL);
+  // initialiser la caméra et la profondeur Z
+  cam = createCamera();
+  // position Z par défaut basée sur le FOV (PI/3 par défaut)
+  camZ = (height / 2) / Math.tan(PI / 6);
+  cam.setPosition(0, 0, camZ);
+  cam.lookAt(0, 0, 0);
+  // régler la perspective pour correspondre à la taille du canvas
+  perspective(PI / 3, width / height, 0.1, 10000);
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+  // recalculer perspective et repositionner la caméra
+  camZ = camZ || ((height / 2) / Math.tan(PI / 6));
+  cam.setPosition(0, 0, camZ);
+  cam.lookAt(0, 0, 0);
+  perspective(PI / 3, width / height, 0.1, 10000);
 }
 
 function draw() {
@@ -62,6 +77,18 @@ function draw() {
     image(cacheLosange, 0, 0, cacheLosange.width * ratio, cacheLosange.height * ratio);
     pop();
   }
+}
+
+// souris : molette pour zoomer/dézoomer (changer la profondeur Z de la caméra)
+function mouseWheel(event) {
+  // event.delta positif = scroll vers le bas (éloigne la caméra)
+  // ajuster facteur si nécessaire (ici 1)
+  camZ += event.delta;
+  camZ = constrain(camZ, 50, 20000);
+  cam.setPosition(0, 0, camZ);
+  cam.lookAt(0, 0, 0);
+  // empêcher le scroll de la page
+  return false;
 }
 
 // if mouse is pressed, play sound
