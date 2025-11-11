@@ -1,14 +1,7 @@
 function preload() {
-  const localPath = 'assets/night-ghost/Night Ghost.ttf';
-  const remoteRoboto = 'https://fonts.gstatic.com/s/roboto/v29/KFOmCnqEu92Fr1Mu4mxP.ttf';
 
   // Try local first, fall back to remote Roboto if that fails (avoids parsing HTML 404 as font).
-  font = loadFont(localPath, () => {
-    console.log('Loaded local font:', localPath);
-  }, () => {
-    console.warn('Local font failed to load, falling back to remote Roboto.');
-    font = loadFont(remoteRoboto, () => console.log('Loaded remote Roboto font'), (e) => console.error('Remote font failed', e));
-  });
+  font = loadFont('assets/night-ghost/Night Ghost.ttf');
 }
 
 
@@ -39,10 +32,8 @@ function draw() {
   if (font) textFont(font);
   textSize(14);
   fill(0);
-  // move to top-left
   //translate(-width/2 + 10, -height/2 + 20);
-
-  text('Model Parts:', 0, 0);
+  text('HELLO WORLD', 0, 0);
 
 
   pop();

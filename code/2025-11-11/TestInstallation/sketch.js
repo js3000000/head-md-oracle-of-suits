@@ -18,6 +18,10 @@ function preload() {
   bkg = loadImage('./img/bkg.png');
   cacheLosange = loadImage('./img/diamond_cache.png');
 
+
+  // fonts
+  font = loadFont('assets/night-ghost/Night Ghost.ttf');
+
   // sounds
   firesound = loadSound('./sound/fire.mp3');
 
@@ -58,7 +62,7 @@ function windowResized() {
 const ratioPlaneVideo = 1.75;
 
 function draw() {
-  /* background(200);
+  //background(200, 40, 0);
   push();
 
 
@@ -70,7 +74,7 @@ function draw() {
   // reculer dans les z pour que ce soit en arrière-plan
   translate(0, 0, 0);
   // dessiner un plan avec la texture vidéo 
-  //plane(videoDrawWidth * ratioPlaneVideo, videoDrawHeight * ratioPlaneVideo);
+  plane(videoDrawWidth * ratioPlaneVideo, videoDrawHeight * ratioPlaneVideo);
   pop();
 
   // brun background
@@ -138,28 +142,30 @@ function draw() {
     const ratio = Math.min(width / cacheLosange.width, height / cacheLosange.height);
 
     // add alpha to cache losange
-    tint(10, 200); // 200 = alpha (0-255)
+    //tint(10, 200); // 200 = alpha (0-255)
     image(cacheLosange, 0, 0, cacheLosange.width * ratio, cacheLosange.height * ratio);
     pop();
-  } */
+  }
 
   // afficher texte au centre au dessus de tout devant le cache losange translate webgl
-// --- TEXTE AU-DESSUS DU CACHE LOSANGE ---
+  // --- TEXTE AU-DESSUS DU CACHE LOSANGE ---
 
-background(200);
-
-  // Dessin 3D
   //background(200);
-  rotateY(frameCount * 0.01);
-  box(100);
 
   // Texte 2D par-dessus
-  resetMatrix(); // revient au repère de base
-  translate(-width / 2, -height / 2);
-  fill(0);
-  textSize(2000);
-  //textAlign(CENTER, CENTER);
-  text("Oracle of Suits", width / 2, height / 2);
+  push();
+  if (font) textFont(font);
+  textSize(10);
+  fill(250);
+  // move to top-left
+  translate(100, -130, 300);
+
+  // centered
+  textAlign(CENTER);
+  text('PLANETE MARS', 0, 0);
+  text('MUSEE DU JEU', 0, 15);
+  text('AN 3000', 0, 30);
+  pop();
 
 }
 
