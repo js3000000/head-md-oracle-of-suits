@@ -8,9 +8,9 @@ let camZ;
 let firesound;
 let cardModel;
 
- let video;
- let videoDrawWidth;
- let videoDrawHeight;
+let video;
+let videoDrawWidth;
+let videoDrawHeight;
 
 function preload() {
 
@@ -58,11 +58,20 @@ function windowResized() {
 const ratioPlaneVideo = 1.75;
 
 function draw() {
+  /* background(200);
+  push();
+
 
   // afficher webcam video as background
+  // ajouter alpha to video
+  // alpha value between 0 (transparent) and 255 (opaque)
+  //tint(255, 150); // 150 = alpha (0-255)
   texture(video);
-  plane(videoDrawWidth * ratioPlaneVideo, videoDrawHeight * ratioPlaneVideo);
-
+  // reculer dans les z pour que ce soit en arrière-plan
+  translate(0, 0, 0);
+  // dessiner un plan avec la texture vidéo 
+  //plane(videoDrawWidth * ratioPlaneVideo, videoDrawHeight * ratioPlaneVideo);
+  pop();
 
   // brun background
   //background(50, 30, 0);
@@ -109,7 +118,7 @@ function draw() {
     translate(0, 0, modelZ);
     // légère inclinaison pour un meilleur effet 3D
     rotateX(-0.1);
-    rotateY(frameCount * 0.01);
+    rotateY(frameCount * 0.1);
     scale(2); // ajuster la taille si nécessaire
     noStroke();
     fill(255);
@@ -127,23 +136,30 @@ function draw() {
     imageMode(CENTER);
     // garder les proportions et centrer
     const ratio = Math.min(width / cacheLosange.width, height / cacheLosange.height);
-    
+
     // add alpha to cache losange
     tint(10, 200); // 200 = alpha (0-255)
     image(cacheLosange, 0, 0, cacheLosange.width * ratio, cacheLosange.height * ratio);
     pop();
-  }
+  } */
 
   // afficher texte au centre au dessus de tout devant le cache losange translate webgl
-  push();
-  fill(255);
-  textAlign(CENTER, CENTER);
-  textSize(200);
-  // placer le texte légèrement devant le modèle mais derrière le cache si nécessaire
-  // translate(0,0,50);
-  text("Oracle of Suits", 0, 0);
-  pop();
+// --- TEXTE AU-DESSUS DU CACHE LOSANGE ---
 
+background(200);
+
+  // Dessin 3D
+  //background(200);
+  rotateY(frameCount * 0.01);
+  box(100);
+
+  // Texte 2D par-dessus
+  resetMatrix(); // revient au repère de base
+  translate(-width / 2, -height / 2);
+  fill(0);
+  textSize(2000);
+  //textAlign(CENTER, CENTER);
+  text("Oracle of Suits", width / 2, height / 2);
 
 }
 
