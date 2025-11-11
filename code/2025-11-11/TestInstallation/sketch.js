@@ -1,16 +1,27 @@
 let bkg;
 let maskedImg;
 let cacheLosange;
+
 let cam;
 let camZ;
 
+let firesound;
+let cardModel;
+
+ let video;
+ let videoDrawWidth;
+ let videoDrawHeight;
+
 function preload() {
-  // charge l'image d'arrière-plan
+
+  // 2d images
   bkg = loadImage('./img/bkg.png');
   cacheLosange = loadImage('./img/diamond_cache.png');
 
+  // sounds
   firesound = loadSound('./sound/fire.mp3');
 
+  // 3d models
   cardModel = loadModel('./3dmodel/Card.obj', true);
 }
 
@@ -24,6 +35,15 @@ function setup() {
   cam.lookAt(0, 0, 0);
   // régler la perspective pour correspondre à la taille du canvas
   perspective(PI / 3, width / height, 0.1, 10000);
+
+  videoDrawWidth = 480;
+  videoDrawHeight = 360;
+  // setup video pour webcam
+  video = createCapture(VIDEO);
+  // garder proportions
+  video.size(videoDrawWidth, videoDrawHeight);
+  video.hide();
+
 }
 
 function windowResized() {
@@ -35,10 +55,17 @@ function windowResized() {
   perspective(PI / 3, width / height, 0.1, 10000);
 }
 
+const ratioPlaneVideo = 1.75;
+
 function draw() {
 
+  // afficher webcam video as background
+  texture(video);
+  plane(videoDrawWidth * ratioPlaneVideo, videoDrawHeight * ratioPlaneVideo);
+
+
   // brun background
-  background(50, 30, 0);
+  //background(50, 30, 0);
   // En WEBGL, l'origine (0,0) est le centre. Pour dessiner des éléments 2D en
   // coordonnées top-left (rect, etc.), on translate temporairement vers
   // -width/2, -height/2. Puis on reprend l'origine centrale pour dessiner
@@ -79,7 +106,7 @@ function draw() {
   if (cardModel) {
     push();
     const modelZ = -1000; // profondeur du modèle (entre bgDepth et cacheDepth)
-    translate(900, 0, modelZ);
+    translate(0, 0, modelZ);
     // légère inclinaison pour un meilleur effet 3D
     rotateX(-0.1);
     rotateY(frameCount * 0.01);
@@ -94,21 +121,24 @@ function draw() {
   if (cacheLosange) {
     push();
     // rapprocher le cache vers la caméra pour qu'il soit au-dessus (blanc = transparent si tu ajoutes mask)
-    const cacheDepth = 200; // valeur positive = plus proche de la caméra
+    const cacheDepth = 0; // valeur positive = plus proche de la caméra
     translate(0, 0, cacheDepth);
     // en mode WEBGL l'origine est le centre — dessiner au centre (0,0)
     imageMode(CENTER);
     // garder les proportions et centrer
     const ratio = Math.min(width / cacheLosange.width, height / cacheLosange.height);
+    
+    // add alpha to cache losange
+    tint(10, 200); // 200 = alpha (0-255)
     image(cacheLosange, 0, 0, cacheLosange.width * ratio, cacheLosange.height * ratio);
     pop();
   }
 
-  // afficher texte au centre au dessus de tout
+  // afficher texte au centre au dessus de tout devant le cache losange translate webgl
   push();
   fill(255);
   textAlign(CENTER, CENTER);
-  textSize(48);
+  textSize(200);
   // placer le texte légèrement devant le modèle mais derrière le cache si nécessaire
   // translate(0,0,50);
   text("Oracle of Suits", 0, 0);
