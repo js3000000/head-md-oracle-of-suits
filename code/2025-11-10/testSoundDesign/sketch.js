@@ -1,100 +1,47 @@
-let fireImg; // added: preload the fire image
-let cameraMain;
+let bgSound;
+let started = false;
+let bgImg;
+let showBgImage = true;
 
-let son;
-let playButton;
-let backgroundAudioStarted = false;
-// ...existing code...
+// muted/autoplay helpers
+let desiredVol = 0.08; // target volume after unmute
+let initialMuted = true; // start muted to increase chances of autoplay
+let volumeSlider;
+let muteBtn;
+
 function preload() {
-  fireImg = loadImage('./img/fire_template_1.png'); // adjust path as needed
-  bkgimage = loadImage('./img/background0087.png'); // adjust path as needed
-  cardModel = loadModel('./img/Card.obj', true); // adjust path as needed
-  cardTexture = loadImage('./img/IMG_4528.jpg'); // adjust path as needed
+  bgSound = loadSound('./sound/fire.mp3');
+  // start at zero; we'll try to autoplay muted and let the user unmute later
 
-  // Sons
-  son = loadSound('./sound/fire.mp3');
+  // try to load a background image
 }
-// ...existing code...
+
 function setup() {
+  createCanvas(400, 400);
+  textAlign(CENTER, CENTER);
+  textSize(14);
 
-  // use WEBGL to enable model()
-  createCanvas(windowWidth, windowHeight, WEBGL);
-  pixelDensity(1);
-
-  // create and position a camera that looks at the scene center
-  cameraMain = createCamera();
-  //const camZ = (height / 2) / tan((PI * 60) / 360); // approximate default fov 60deg
-  const camZ = 800;
-
-  cameraMain.setPosition(0, 0, camZ);
-  cameraMain.lookAt(0, 0, 0);
-
-  if (!videoStarted) {
-    setupVideo();
-    videoStarted = true;
-
-    // try to start background audio as soon as we set up the video
-    startBackgroundAudio();
-  }
-
-  setupHands();
 
 }
-// ...existing code...
+
+
 function draw() {
-  background(0);
+  /*   // background image or flat color
+    if (showBgImage && bgImg) background(bgImg);
+    else background(220);
+  
+    ellipse(width / 2, height / 2, 50, 50);
+  
+    if (!started) {
+      fill(0);
+      text("Cliquez pour autoriser l'audio (ou cliquez 'Unmute')", width / 2, height - 20);
+    } */
 
-  // try again if video wasn't ready earlier (some setups delay video)
-  if (!backgroundAudioStarted && typeof isVideoReady === 'function' && isVideoReady()) {
-    startBackgroundAudio();
+  circle(width / 2, height / 2, 50);
+
+  if (bgSound && !soundPlayed) {
+    soundPlayed = true;
+    bgSound.play();
   }
 
-
-
-  // new: attempt to start the background audio, fallback to an "Activer le son" button if blocked by browser
-  function startBackgroundAudio() {
-    if (backgroundAudioStarted) return;
-    if (!son) return;
-
-    try {
-      son.setLoop(true);
-      son.setVolume(0.6);
-      const p = son.play(); // p5.sound may not return a promise in all builds
-      // mark as started optimistically; if play() throws or is blocked we'll handle in catch below
-      backgroundAudioStarted = true;
-      // if play() returns a promise, handle rejection (browser autoplay policy)
-      if (p && typeof p.catch === 'function') {
-        p.catch(() => {
-          backgroundAudioStarted = false;
-          showUnmuteButton();
-        });
-      }
-    } catch (e) {
-      backgroundAudioStarted = false;
-      showUnmuteButton();
-    }
-  }
-
-  function showUnmuteButton() {
-    if (playButton) return;
-    playButton = createButton('Activer le son');
-    playButton.position(20, 20);
-    playButton.style('z-index', '1000');
-    playButton.mousePressed(async () => {
-      // unlock audio context
-      if (typeof userStartAudio === 'function') {
-        await userStartAudio();
-      } else if (getAudioContext && getAudioContext().resume) {
-        await getAudioContext().resume();
-      }
-      if (son && !son.isPlaying()) {
-        son.setLoop(true);
-        son.setVolume(0.6);
-        son.play();
-      }
-      backgroundAudioStarted = true;
-      playButton.remove();
-      playButton = null;
-    })
-  }
 }
