@@ -37,7 +37,8 @@ function windowResized() {
 
 function draw() {
 
-  background(250);
+  // brun background
+  background(50, 30, 0);
   // En WEBGL, l'origine (0,0) est le centre. Pour dessiner des éléments 2D en
   // coordonnées top-left (rect, etc.), on translate temporairement vers
   // -width/2, -height/2. Puis on reprend l'origine centrale pour dessiner
@@ -50,7 +51,7 @@ function draw() {
   if (bkg) {
     // reculer seulement le background dans les z sans affecter les barres/rects
     push();
-    const bgDepth = -500; // ajuster la profondeur (valeur négative = plus loin)
+    const bgDepth = -2000; // background très loin
     translate(0, 0, bgDepth);
 
     // afficher l'image d'arrière-plan en gardant les proportions et en centrant
@@ -74,9 +75,27 @@ function draw() {
 
   pop();
 
+  // Dessiner le modèle 3D de la carte au centre — le positionner entre le background et le cache
+  if (cardModel) {
+    push();
+    const modelZ = -1000; // profondeur du modèle (entre bgDepth et cacheDepth)
+    translate(900, 0, modelZ);
+    // légère inclinaison pour un meilleur effet 3D
+    rotateX(-0.1);
+    rotateY(frameCount * 0.01);
+    scale(2); // ajuster la taille si nécessaire
+    noStroke();
+    fill(255);
+    model(cardModel);
+    pop();
+  }
+
   // Dessiner le cache losange au-dessus de tout (devant les cartes qui tombent)
   if (cacheLosange) {
     push();
+    // rapprocher le cache vers la caméra pour qu'il soit au-dessus (blanc = transparent si tu ajoutes mask)
+    const cacheDepth = 200; // valeur positive = plus proche de la caméra
+    translate(0, 0, cacheDepth);
     // en mode WEBGL l'origine est le centre — dessiner au centre (0,0)
     imageMode(CENTER);
     // garder les proportions et centrer
@@ -85,24 +104,13 @@ function draw() {
     pop();
   }
 
-  // Dessiner le modèle 3D de la carte au centre
-  if (cardModel) {
-    push();
-    // positionner la carte au centre
-    rotateX(-0.1); // légère inclinaison pour un meilleur effet 3D
-    rotateY(frameCount * 0.01); // rotation continue autour de l'axe Y
-    scale(2); // ajuster la taille si nécessaire
-    noStroke();
-    fill(255);
-    model(cardModel);
-    pop();
-  }
-
   // afficher texte au centre au dessus de tout
   push();
   fill(255);
   textAlign(CENTER, CENTER);
   textSize(48);
+  // placer le texte légèrement devant le modèle mais derrière le cache si nécessaire
+  // translate(0,0,50);
   text("Oracle of Suits", 0, 0);
   pop();
 
