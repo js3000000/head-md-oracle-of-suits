@@ -35,6 +35,9 @@ let endingImage;
 
 function preload() {
 
+
+  //museumBkg = loadImage('./img/scene_daylight.png');  
+
   animationVideo = createVideo('./videos/animation.mp4');
   animationVideo.hide();
 
@@ -105,8 +108,6 @@ function draw() {
   // if (diamondMaskImage) image(diamondMaskImage, 0, 0, width, height);
 
 } // fin draw()
-
-
 
 
 // FONCTIONS ---------------------------
