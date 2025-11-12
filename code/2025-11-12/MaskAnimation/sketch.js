@@ -3,6 +3,7 @@ let totalFrames = 75; // nombre total de PNG
 let currentFrame = 0;
 
 let filename
+let bkg;
 
 function preload() {
   // charger chaque image de la séquence
@@ -10,6 +11,9 @@ function preload() {
    filename = './videos/portalAnimation/portalCache_v1/portalCache_' + nf(i, 5) + '.png';
     frames.push(loadImage(filename));  
   }
+
+  // image ending
+  bkg = loadImage('./img/animation_ending_frame.png');
 
 }
 
@@ -23,7 +27,11 @@ function windowResized() {
 }
 
 function draw() {
-  background(255, 25, 25); // ou un fond coloré pour voir la transparence
+  //background(255, 25, 25); // ou un fond coloré pour voir la transparence
+
+  // centrer l'origine (0,0) au milieu de la fenêtre
+
+
 
   // dessiner la frame courante centrée et redimensionnée pour tenir dans la fenêtre
   push();
@@ -34,6 +42,7 @@ function draw() {
     const scaleFactor = min(width / img.width, height / img.height);
     const drawW = img.width * scaleFactor;
     const drawH = img.height * scaleFactor;
+      image(bkg, 0, 0, drawW, drawH);
     image(img, 0, 0, drawW, drawH); // (0,0) = centre du canvas en WEBGL
   }
   pop();
