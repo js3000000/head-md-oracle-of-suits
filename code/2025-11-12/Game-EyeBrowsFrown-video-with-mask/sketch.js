@@ -7,6 +7,10 @@ let rightEyebrow = 0.0;
 let videoPlaying = false;
 let videoEnded = false;
 
+
+let diamondMaskImage;
+let endingImage; // <--- ajouté pour déclarer la variable d'image de fin
+
 function setup() {
   // full window canvas
   createCanvas(windowWidth, windowHeight);
@@ -14,14 +18,10 @@ function setup() {
   setupFace();
   setupVideo();
 
-   // Quand la vidéo est terminée
-  animationVideo.onended(() => {
-    videoPlaying = false;
-    videoEnded = true;
-    // on s’assure qu’elle reste sur la dernière frame
-    animationVideo.pause();
-    animationVideo.time(animationVideo.duration());
-  });
+  // Quand la vidéo est terminée
+  // utiliser l'élément HTML sous-jacent pour capter l'événement ended
+
+
 }
 
 function windowResized() {
@@ -36,37 +36,34 @@ function preload() {
 
   animationVideo = createVideo('./videos/animation.mp4');
   animationVideo.hide();
+
+
+  diamondMaskImage = loadImage('./img/diamond_cache.png');
+  endingImage = loadImage('./img/animation_ending_frame.png');
 }
 
 
 
 function draw() {
+  // afficher soit la dernière image (endingImage) si videoEnded, soit la vidéo / frame initiale
 
 
-  if (videoPlaying) {
+
+
+  if (videoPlaying && !videoEnded) {
     // afficher la vidéo animée
     image(animationVideo, 0, 0, width, height);
     animationVideo.play();
-  } else if (videoEnded) {
-    // afficher la dernière image de la vidéo
-    animationVideo.pause();
-    animationVideo.time(animationVideo.duration()); // aller à la dernière frame
-    image(animationVideo, 0, 0, width, height);
-
+    if (animationVideo.time() >= animationVideo.duration()) {
+      videoPlaying = false;
+      videoEnded = true;
+    }
   } else {
     // afficher l'image fixe (frame initiale)
     animationVideo.pause();
     animationVideo.time(0);
     image(animationVideo, 0, 0, width, height);
   }
-
-
-
-
-
-
-  // update video frame
-  //updateVideo();
 
   if (isVideoReady()) {
     // show video frame
@@ -78,28 +75,28 @@ function draw() {
   leftEyebrow = getBlendshapeScore('browDownLeft');
   rightEyebrow = getBlendshapeScore('browDownRight');
 
-  // draw features only if we have a face
-  if (faces && faces.length > 0) {
-    drawEyebrows(faces[0]);
-  } else {
-    // draw a visible notice so you know the sketch is running but no face found
-    fill(255, 0, 0);
-    noStroke();
-    textSize(24);
-  }
-
-
   // draw blendshape values
-  drawBlendshapeScores();
+  //drawBlendshapeScores();
 
-  if (leftEyebrow + rightEyebrow > 0.5) {
+  // draw eyebrows
+  /* if (faces && faces.length > 0) {
+    drawEyebrows(faces[0]);
+    // draw eyes
+    leftEyeBlink = getBlendshapeScore('eyeBlinkLeft');
+    rightEyeBlink = getBlendshapeScore('eyeBlinkRight');
+    drawEyes();
+  } */
+
+  // n'autorise pas le redémarrage si la vidéo est déjà finie
+  if (!videoEnded && leftEyebrow + rightEyebrow > 0.5) {
     videoPlaying = true;
   }
 
-
-}
-
-image(bgImage, 0, 0, width, height);
+  // dessiner le diamond cache AU DESSUS de tout, même de l'image de fin
+  if (diamondMaskImage) {
+    image(diamondMaskImage, 0, 0, width, height);
+  }
+} // fin draw()
 
 function drawBlendshapeScores() {
   fill(255);
