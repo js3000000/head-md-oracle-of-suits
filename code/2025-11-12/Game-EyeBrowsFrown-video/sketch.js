@@ -4,7 +4,7 @@ let rightEyeBlink = 0.0;
 let leftEyebrow = 0.0;
 let rightEyebrow = 0.0;
 
-
+let videoPlaying = false;
 
 function setup() {
   // full window canvas
@@ -23,7 +23,7 @@ let bgImage;
 let animationVideo;
 function preload() {
   // charger image de background
-  //bgImage = loadImage('./img/neutre.png');
+
   animationVideo = createVideo('./videos/animation.mp4');
   animationVideo.hide();
 }
@@ -40,13 +40,24 @@ function draw() {
 
 
   // mettre image video figée en background
-  image(animationVideo, 0, 0, width, height);
+
 
   // afficher première frame de la vidéo seulement
 
 
-  animationVideo.time(0);
-  animationVideo.pause();
+  // Afficher soit l'image fixe soit la vidéo si elle joue
+  if (videoPlaying) {
+    // afficher la vidéo animée
+    image(animationVideo, 0, 0, width, height);
+    animationVideo.play();
+  } else {
+    // afficher l'image fixe (frame initiale)
+    image(animationVideo, 0, 0, width, height);
+    animationVideo.time(0);
+    animationVideo.pause();
+  }
+
+
 
   // update video frame
   //updateVideo();
@@ -88,11 +99,10 @@ function draw() {
   drawBlendshapeScores();
 
   if (leftEyebrow + rightEyebrow > 0.5) {
-    // if either eyebrow is significantly down, change background
 
-    bgImage = loadImage('./img/carte.png');
-    // enlever autre image
+    videoPlaying = true;
   }
+
 
 }
 
