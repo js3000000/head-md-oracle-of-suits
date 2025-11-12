@@ -36,8 +36,6 @@ let endingImage;
 function preload() {
 
 
-  //museumBkg = loadImage('./img/scene_daylight.png');  
-
   animationVideo = createVideo('./videos/animation.mp4');
   animationVideo.hide();
 

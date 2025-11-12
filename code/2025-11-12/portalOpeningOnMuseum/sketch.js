@@ -4,6 +4,8 @@ let currentFrame = 0;
 
 let filename
 let bkg;
+let lastFrameTime = 0;
+let frameDelay = 100; // ms entre chaque frame (ajuster pour vitesse)
 
 // PRELOAD --------------------------
 
@@ -15,11 +17,8 @@ function preload() {
   }
 
   // image ending
-  bkg = loadImage('./img/scene_daylight.png');
+  bkg = loadImage('./img/museum.png');
 
-  // preload video
-  video = createVideo(['./videos/animation.mp4']);
-  video.hide(); // cacher le player vidéo
 
 } // fin preload
 
@@ -41,7 +40,8 @@ function draw() {
   imageMode(CENTER); // centre l'image sur son point (0,0) en WEBGL
   //const img = frames[currentFrame];
   
-  const img = frames[frames.length -1]; // image fixe pour test
+  // utiliser la frame courante si disponible
+  const img = frames.length > 0 ? frames[currentFrame] : null;
   if (img) {
     // calcule un facteur d'échelle pour fitter l'image dans la fenêtre sans la déformer
     const scaleFactor = min(width / img.width, height / img.height);
@@ -49,27 +49,50 @@ function draw() {
     const drawH = img.height * scaleFactor;
     
     // image joueur
-    image(bkg, 0, 0, drawW, drawH);
+    // changer taille image de fond ici
+    background(60, 0, 0);
+    noStroke();
+    image(bkg, 0, 0, drawW/2, drawH/2);
 
     // play video animation
     /* video.size(drawW, drawH);
     video.loop();
     video.volume(0);
     image(video, 0, 0, drawW, drawH); // (0,0) = centre du canvas en WEBGL */
-    image(img, 0, 0, drawW, drawH); // (0,0) = centre du canvas en WEBGL 
+    
+    // dessiner la frame courante
+    image(img, 0, 0, drawW, drawH);
+
+    // avancer la frame en fonction du tempo défini
+    if (frames.length > 0 && (millis() - lastFrameTime) >= frameDelay) {
+      currentFrame = (currentFrame + 1) % frames.length;
+      lastFrameTime = millis();
+    }
+
+    
+
+  // si pas de frames chargées, afficher le background pour éviter écran vide
+  if (frames.length === 0 && bkg) {
+    push();
+    imageMode(CENTER);
+    const scaleFactorBkg = min(width / bkg.width, height / bkg.height);
+    image(bkg, 0, 0, bkg.width * scaleFactorBkg, bkg.height * scaleFactorBkg);
+    pop();
+  }
+
+
+
   }
   pop();
-
-  // passer à la frame suivante
-/*   currentFrame++;
-  if (currentFrame >= frames.length) {
-    currentFrame = 0; // boucle infinie
-  } */
 
     push();
     noStroke();
     fill(0);
-    const barWidth = ((width - (bkg.width * min(width / bkg.width, height / bkg.height))) / 2) + 10;
+    // calculer de manière sûre la taille des barres même si bkg non défini
+    const bkgW = bkg ? bkg.width : width;
+    const bkgH = bkg ? bkg.height : height;
+    const bkgScale = min(width / bkgW, height / bkgH);
+    const barWidth = ((width - (bkgW * bkgScale)) / 2) + 10;
     rectMode(CENTER);
     rect(-width / 2 + barWidth / 2, 0, barWidth, height); // barre gauche
     rect(width / 2 - barWidth / 2, 0, barWidth, height); // barre droite
@@ -79,10 +102,10 @@ function draw() {
     push();
     noStroke();
     fill(0);
-    const barHeight = ((height - (bkg.height * min(width / bkg.width, height / bkg.height))) / 2) + 10;
+    const barHeight = ((height - (bkgH * bkgScale)) / 2) + 10;
     rectMode(CENTER);
     rect(0, -height / 2 + barHeight / 2, width, barHeight); // barre haute
     rect(0, height / 2 - barHeight / 2, width, barHeight); // barre basse
     pop();
 
-}
+} // fin de draw()
