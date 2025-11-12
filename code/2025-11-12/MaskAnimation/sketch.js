@@ -15,6 +15,10 @@ function preload() {
   // image ending
   bkg = loadImage('./img/animation_ending_frame.png');
 
+  // preload video
+  video = createVideo(['./videos/animation.mp4']);
+  video.hide(); // cacher le player vidéo
+
 }
 
 function setup() {
@@ -42,7 +46,15 @@ function draw() {
     const scaleFactor = min(width / img.width, height / img.height);
     const drawW = img.width * scaleFactor;
     const drawH = img.height * scaleFactor;
-      image(bkg, 0, 0, drawW, drawH);
+    
+    // image joueur
+    image(bkg, 0, 0, drawW, drawH);
+
+    // play video animation
+    video.size(drawW, drawH);
+    video.loop();
+    video.volume(0);
+    image(video, 0, 0, drawW, drawH); // (0,0) = centre du canvas en WEBGL
     image(img, 0, 0, drawW, drawH); // (0,0) = centre du canvas en WEBGL
   }
   pop();
@@ -52,4 +64,14 @@ function draw() {
   if (currentFrame >= frames.length) {
     currentFrame = 0; // boucle infinie
   }
+
+    push();
+    noStroke();
+    fill(0);
+    const barWidth = ((width - (bkg.width * min(width / bkg.width, height / bkg.height))) / 2) + 10;
+    rectMode(CENTER);
+    rect(-width / 2 + barWidth / 2, 0, barWidth, height); // barre gauche
+    rect(width / 2 - barWidth / 2, 0, barWidth, height); // barre droite
+    pop();
+
 }
