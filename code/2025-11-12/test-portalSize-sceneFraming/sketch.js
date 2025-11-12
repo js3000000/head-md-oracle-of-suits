@@ -5,6 +5,8 @@ let currentFrame = 0;
 let filename
 let bkg;
 
+// PRELOAD --------------------------
+
 function preload() {
   // charger chaque image de la séquence
   for (let i = 0; i < totalFrames; i++) {
@@ -19,7 +21,9 @@ function preload() {
   video = createVideo(['./videos/animation.mp4']);
   video.hide(); // cacher le player vidéo
 
-}
+} // fin preload
+
+// SETUP & DRAW --------------------------
 
 function setup() {
   createCanvas(windowWidth, windowHeight, WEBGL);
@@ -31,11 +35,7 @@ function windowResized() {
 }
 
 function draw() {
-  //background(255, 25, 25); // ou un fond coloré pour voir la transparence
-
-  // centrer l'origine (0,0) au milieu de la fenêtre
-
-
+  
 
   // dessiner la frame courante centrée et redimensionnée pour tenir dans la fenêtre
   push();
@@ -74,6 +74,16 @@ function draw() {
     rectMode(CENTER);
     rect(-width / 2 + barWidth / 2, 0, barWidth, height); // barre gauche
     rect(width / 2 - barWidth / 2, 0, barWidth, height); // barre droite
+    pop();
+
+    // ajouter barre noire en haut et en bas
+    push();
+    noStroke();
+    fill(0);
+    const barHeight = ((height - (bkg.height * min(width / bkg.width, height / bkg.height))) / 2) + 10;
+    rectMode(CENTER);
+    rect(0, -height / 2 + barHeight / 2, width, barHeight); // barre haute
+    rect(0, height / 2 - barHeight / 2, width, barHeight); // barre basse
     pop();
 
 }

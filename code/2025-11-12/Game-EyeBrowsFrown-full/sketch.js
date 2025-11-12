@@ -10,11 +10,7 @@ let videoEnded = false;
 let frames = []; // tableau pour stocker les images
 let totalFrames = 75; // nombre total de PNG
 let currentFrame = 0;
-
-let diamondMaskImage;
-let endingImage; // <--- ajouté pour déclarer la variable d'image de fin
-
-let filename;
+let portalOpen = false;
 
 
 function setup() {
@@ -32,6 +28,10 @@ function windowResized() {
 
 let bgImage;
 let animationVideo;
+let filename;
+let diamondMaskImage;
+let endingImage;
+
 
 function preload() {
 
@@ -66,11 +66,14 @@ function draw() {
     animationVideo.time(0);
     image(animationVideo, 0, 0, width, height);
 
+    // after a few seconds, open the portal
+    setTimeout(() => {
+      portalOpen = true;
+    }, 1850);
 
   }
 
-  // passer à la frame suivante
-
+  // pour tests
   if (isVideoReady()) {
     // show video frame (webcam)
     //image(videoElement, 0, 0);
@@ -91,10 +94,13 @@ function draw() {
     image(frames[currentFrame], 0, 0, width, height);
 
     // avance la frame (boucle). Ajuster le modulus pour ralentir/accélérer.
-     if (frameCount % 2 === 0) {
+     if (frameCount && !portalOpen) {
       currentFrame = (currentFrame + 1) % totalFrames;
+    } else {
+      currentFrame = totalFrames - 1; // freeze on last frame
     }
   }
+
   // si vous voulez conserver le diamondMask par-dessus l'animation, décommentez :
   // if (diamondMaskImage) image(diamondMaskImage, 0, 0, width, height);
 
@@ -103,7 +109,7 @@ function draw() {
 
 
 
-// FONCTIONS --------------------
+// FONCTIONS ---------------------------
 
 function drawBlendshapeScores() {
   fill(255);
