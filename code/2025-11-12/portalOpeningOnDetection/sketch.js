@@ -5,9 +5,7 @@ let currentFrame = 0;
 let filename
 let bkg;
 let lastFrameTime = 0;
-let frameDelay = 10; // ms entre chaque frame (ajuster pour vitesse)
-
-let portalOpen = false;
+let frameDelay = 100; // ms entre chaque frame (ajuster pour vitesse)
 
 // PRELOAD -----------------------------
 
@@ -28,16 +26,14 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight, WEBGL);
 
-  // après une courte attente, commencer l'animation du portail
-  setTimeout(() => {
-    portalOpen = true;
-  }, 1560);
-
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
+
+
+
 
 function draw() {
 
@@ -61,20 +57,14 @@ function draw() {
 
 
     // dessiner la frame courante
-    
-
-    if (!portalOpen) {
-      image(img, 0, 0, drawW, drawH);
-    } else {
-      // si le portail n'est pas encore ouvert, afficher la première frame
-      image(frames[frames.length - 1], 0, 0, drawW, drawH);
-    }
+    image(img, 0, 0, drawW, drawH);
 
     // avancer la frame en fonction du tempo défini
     if (frames.length > 0 && (millis() - lastFrameTime) >= frameDelay) {
       currentFrame = (currentFrame + 1) % frames.length;
       lastFrameTime = millis();
     }
+
 
     // si pas de frames chargées, afficher le background pour éviter écran vide
     if (frames.length === 0 && bkg) {
